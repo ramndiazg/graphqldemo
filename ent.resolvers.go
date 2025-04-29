@@ -22,17 +22,17 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []int) ([]ent.Noder, erro
 
 // Reviews is the resolver for the reviews field.
 func (r *queryResolver) Reviews(ctx context.Context) ([]*ent.Review, error) {
-	panic(fmt.Errorf("not implemented: Reviews - reviews"))
+	return r.client.Review.Query().All(ctx)
 }
 
 // Tools is the resolver for the tools field.
 func (r *queryResolver) Tools(ctx context.Context) ([]*ent.Tool, error) {
-	panic(fmt.Errorf("not implemented: Tools - tools"))
+	return r.client.Tool.Query().All(ctx)
 }
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*ent.User, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
+	return r.client.User.Query().All(ctx)
 }
 
 // ID is the resolver for the id field.
