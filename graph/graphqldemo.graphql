@@ -1,0 +1,5 @@
+type Mutation {
+    createreview(input: CreateReviewInput!): Review
+    createuser(input: CreateUserInput!): User
+    createtool(input: CreateToolInput!): Tool
+}

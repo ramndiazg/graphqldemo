@@ -23,6 +23,8 @@ type ToolQuery struct {
 	order      []tool.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Tool
+	modifiers  []func(*sql.Selector)
+	loadTotal  []func(context.Context, []*Tool) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -344,6 +346,9 @@ func (tq *ToolQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Tool, e
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
+	if len(tq.modifiers) > 0 {
+		_spec.Modifiers = tq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -353,11 +358,19 @@ func (tq *ToolQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Tool, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	for i := range tq.loadTotal {
+		if err := tq.loadTotal[i](ctx, nodes); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (tq *ToolQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := tq.querySpec()
+	if len(tq.modifiers) > 0 {
+		_spec.Modifiers = tq.modifiers
+	}
 	_spec.Node.Columns = tq.ctx.Fields
 	if len(tq.ctx.Fields) > 0 {
 		_spec.Unique = tq.ctx.Unique != nil && *tq.ctx.Unique

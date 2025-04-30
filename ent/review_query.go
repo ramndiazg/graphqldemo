@@ -23,6 +23,8 @@ type ReviewQuery struct {
 	order      []review.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Review
+	modifiers  []func(*sql.Selector)
+	loadTotal  []func(context.Context, []*Review) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -344,6 +346,9 @@ func (rq *ReviewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Revie
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -353,11 +358,19 @@ func (rq *ReviewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Revie
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	for i := range rq.loadTotal {
+		if err := rq.loadTotal[i](ctx, nodes); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (rq *ReviewQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := rq.querySpec()
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
+	}
 	_spec.Node.Columns = rq.ctx.Fields
 	if len(rq.ctx.Fields) > 0 {
 		_spec.Unique = rq.ctx.Unique != nil && *rq.ctx.Unique
