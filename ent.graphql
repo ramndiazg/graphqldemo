@@ -8,6 +8,8 @@ input CreateReviewInput {
   rating: Int!
   comment: String!
   createdAt: Time
+  reviewerID: ID
+  reviwedtoolID: ID
 }
 """
 CreateToolInput is used for create Tool object.
@@ -20,6 +22,7 @@ input CreateToolInput {
   website: String!
   imageURL: String!
   createdAt: Time
+  reviewIDs: [ID!]
 }
 """
 CreateUserInput is used for create User object.
@@ -31,6 +34,7 @@ input CreateUserInput {
   email: String!
   passwordHash: String!
   createdAt: Time
+  reviewIDs: [ID!]
 }
 """
 Define a Relay Cursor type:
@@ -110,6 +114,8 @@ type Review implements Node {
   rating: Int!
   comment: String!
   createdAt: Time!
+  reviewer: User
+  reviwedtool: Tool @goField(name: "ReviwedTool", forceResolver: false)
 }
 """
 The builtin Time type
@@ -123,6 +129,7 @@ type Tool implements Node {
   website: String!
   imageURL: String!
   createdAt: Time!
+  reviews: [Review!]
 }
 type User implements Node {
   id: ID!
@@ -131,4 +138,5 @@ type User implements Node {
   email: String!
   passwordHash: String!
   createdAt: Time!
+  reviews: [Review!]
 }

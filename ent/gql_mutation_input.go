@@ -4,13 +4,17 @@ package ent
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // CreateReviewInput represents a mutation input for creating reviews.
 type CreateReviewInput struct {
-	Rating    int
-	Comment   string
-	CreatedAt *time.Time
+	Rating        int
+	Comment       string
+	CreatedAt     *time.Time
+	ReviewerID    *uuid.UUID
+	ReviwedToolID *uuid.UUID
 }
 
 // Mutate applies the CreateReviewInput on the ReviewMutation builder.
@@ -19,6 +23,12 @@ func (i *CreateReviewInput) Mutate(m *ReviewMutation) {
 	m.SetComment(i.Comment)
 	if v := i.CreatedAt; v != nil {
 		m.SetCreatedAt(*v)
+	}
+	if v := i.ReviewerID; v != nil {
+		m.SetReviewerID(*v)
+	}
+	if v := i.ReviwedToolID; v != nil {
+		m.SetReviwedToolID(*v)
 	}
 }
 
@@ -36,6 +46,7 @@ type CreateToolInput struct {
 	Website     string
 	ImageURL    string
 	CreatedAt   *time.Time
+	ReviewIDs   []uuid.UUID
 }
 
 // Mutate applies the CreateToolInput on the ToolMutation builder.
@@ -47,6 +58,9 @@ func (i *CreateToolInput) Mutate(m *ToolMutation) {
 	m.SetImageURL(i.ImageURL)
 	if v := i.CreatedAt; v != nil {
 		m.SetCreatedAt(*v)
+	}
+	if v := i.ReviewIDs; len(v) > 0 {
+		m.AddReviewIDs(v...)
 	}
 }
 
@@ -63,6 +77,7 @@ type CreateUserInput struct {
 	Email        string
 	PasswordHash string
 	CreatedAt    *time.Time
+	ReviewIDs    []uuid.UUID
 }
 
 // Mutate applies the CreateUserInput on the UserMutation builder.
@@ -73,6 +88,9 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	m.SetPasswordHash(i.PasswordHash)
 	if v := i.CreatedAt; v != nil {
 		m.SetCreatedAt(*v)
+	}
+	if v := i.ReviewIDs; len(v) > 0 {
+		m.AddReviewIDs(v...)
 	}
 }
 

@@ -5,6 +5,8 @@ package ent
 import (
 	"fmt"
 	"graphQlDemo/ent/review"
+	"graphQlDemo/ent/tool"
+	"graphQlDemo/ent/user"
 	"strings"
 	"time"
 
@@ -23,8 +25,48 @@ type Review struct {
 	// Comment holds the value of the "comment" field.
 	Comment string `json:"comment,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt    time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ReviewQuery when eager-loading is set.
+	Edges        ReviewEdges `json:"edges"`
+	tool_reviews *uuid.UUID
+	user_reviews *uuid.UUID
 	selectValues sql.SelectValues
+}
+
+// ReviewEdges holds the relations/edges for other nodes in the graph.
+type ReviewEdges struct {
+	// Reviewer holds the value of the reviewer edge.
+	Reviewer *User `json:"reviewer,omitempty"`
+	// ReviwedTool holds the value of the reviwedTool edge.
+	ReviwedTool *Tool `json:"reviwedTool,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+	// totalCount holds the count of the edges above.
+	totalCount [2]map[string]int
+}
+
+// ReviewerOrErr returns the Reviewer value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ReviewEdges) ReviewerOrErr() (*User, error) {
+	if e.Reviewer != nil {
+		return e.Reviewer, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "reviewer"}
+}
+
+// ReviwedToolOrErr returns the ReviwedTool value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ReviewEdges) ReviwedToolOrErr() (*Tool, error) {
+	if e.ReviwedTool != nil {
+		return e.ReviwedTool, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: tool.Label}
+	}
+	return nil, &NotLoadedError{edge: "reviwedTool"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -40,6 +82,10 @@ func (*Review) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case review.FieldID:
 			values[i] = new(uuid.UUID)
+		case review.ForeignKeys[0]: // tool_reviews
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case review.ForeignKeys[1]: // user_reviews
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -79,6 +125,20 @@ func (r *Review) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				r.CreatedAt = value.Time
 			}
+		case review.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field tool_reviews", values[i])
+			} else if value.Valid {
+				r.tool_reviews = new(uuid.UUID)
+				*r.tool_reviews = *value.S.(*uuid.UUID)
+			}
+		case review.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field user_reviews", values[i])
+			} else if value.Valid {
+				r.user_reviews = new(uuid.UUID)
+				*r.user_reviews = *value.S.(*uuid.UUID)
+			}
 		default:
 			r.selectValues.Set(columns[i], values[i])
 		}
@@ -90,6 +150,16 @@ func (r *Review) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (r *Review) Value(name string) (ent.Value, error) {
 	return r.selectValues.Get(name)
+}
+
+// QueryReviewer queries the "reviewer" edge of the Review entity.
+func (r *Review) QueryReviewer() *UserQuery {
+	return NewReviewClient(r.config).QueryReviewer(r)
+}
+
+// QueryReviwedTool queries the "reviwedTool" edge of the Review entity.
+func (r *Review) QueryReviwedTool() *ToolQuery {
+	return NewReviewClient(r.config).QueryReviwedTool(r)
 }
 
 // Update returns a builder for updating this Review.

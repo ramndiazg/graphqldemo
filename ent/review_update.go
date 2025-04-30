@@ -8,11 +8,14 @@ import (
 	"fmt"
 	"graphQlDemo/ent/predicate"
 	"graphQlDemo/ent/review"
+	"graphQlDemo/ent/tool"
+	"graphQlDemo/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // ReviewUpdate is the builder for updating Review entities.
@@ -77,9 +80,59 @@ func (ru *ReviewUpdate) SetNillableCreatedAt(t *time.Time) *ReviewUpdate {
 	return ru
 }
 
+// SetReviewerID sets the "reviewer" edge to the User entity by ID.
+func (ru *ReviewUpdate) SetReviewerID(id uuid.UUID) *ReviewUpdate {
+	ru.mutation.SetReviewerID(id)
+	return ru
+}
+
+// SetNillableReviewerID sets the "reviewer" edge to the User entity by ID if the given value is not nil.
+func (ru *ReviewUpdate) SetNillableReviewerID(id *uuid.UUID) *ReviewUpdate {
+	if id != nil {
+		ru = ru.SetReviewerID(*id)
+	}
+	return ru
+}
+
+// SetReviewer sets the "reviewer" edge to the User entity.
+func (ru *ReviewUpdate) SetReviewer(u *User) *ReviewUpdate {
+	return ru.SetReviewerID(u.ID)
+}
+
+// SetReviwedToolID sets the "reviwedTool" edge to the Tool entity by ID.
+func (ru *ReviewUpdate) SetReviwedToolID(id uuid.UUID) *ReviewUpdate {
+	ru.mutation.SetReviwedToolID(id)
+	return ru
+}
+
+// SetNillableReviwedToolID sets the "reviwedTool" edge to the Tool entity by ID if the given value is not nil.
+func (ru *ReviewUpdate) SetNillableReviwedToolID(id *uuid.UUID) *ReviewUpdate {
+	if id != nil {
+		ru = ru.SetReviwedToolID(*id)
+	}
+	return ru
+}
+
+// SetReviwedTool sets the "reviwedTool" edge to the Tool entity.
+func (ru *ReviewUpdate) SetReviwedTool(t *Tool) *ReviewUpdate {
+	return ru.SetReviwedToolID(t.ID)
+}
+
 // Mutation returns the ReviewMutation object of the builder.
 func (ru *ReviewUpdate) Mutation() *ReviewMutation {
 	return ru.mutation
+}
+
+// ClearReviewer clears the "reviewer" edge to the User entity.
+func (ru *ReviewUpdate) ClearReviewer() *ReviewUpdate {
+	ru.mutation.ClearReviewer()
+	return ru
+}
+
+// ClearReviwedTool clears the "reviwedTool" edge to the Tool entity.
+func (ru *ReviewUpdate) ClearReviwedTool() *ReviewUpdate {
+	ru.mutation.ClearReviwedTool()
+	return ru
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -129,6 +182,64 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := ru.mutation.CreatedAt(); ok {
 		_spec.SetField(review.FieldCreatedAt, field.TypeTime, value)
+	}
+	if ru.mutation.ReviewerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   review.ReviewerTable,
+			Columns: []string{review.ReviewerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.ReviewerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   review.ReviewerTable,
+			Columns: []string{review.ReviewerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ru.mutation.ReviwedToolCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   review.ReviwedToolTable,
+			Columns: []string{review.ReviwedToolColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tool.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.ReviwedToolIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   review.ReviwedToolTable,
+			Columns: []string{review.ReviwedToolColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tool.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -199,9 +310,59 @@ func (ruo *ReviewUpdateOne) SetNillableCreatedAt(t *time.Time) *ReviewUpdateOne 
 	return ruo
 }
 
+// SetReviewerID sets the "reviewer" edge to the User entity by ID.
+func (ruo *ReviewUpdateOne) SetReviewerID(id uuid.UUID) *ReviewUpdateOne {
+	ruo.mutation.SetReviewerID(id)
+	return ruo
+}
+
+// SetNillableReviewerID sets the "reviewer" edge to the User entity by ID if the given value is not nil.
+func (ruo *ReviewUpdateOne) SetNillableReviewerID(id *uuid.UUID) *ReviewUpdateOne {
+	if id != nil {
+		ruo = ruo.SetReviewerID(*id)
+	}
+	return ruo
+}
+
+// SetReviewer sets the "reviewer" edge to the User entity.
+func (ruo *ReviewUpdateOne) SetReviewer(u *User) *ReviewUpdateOne {
+	return ruo.SetReviewerID(u.ID)
+}
+
+// SetReviwedToolID sets the "reviwedTool" edge to the Tool entity by ID.
+func (ruo *ReviewUpdateOne) SetReviwedToolID(id uuid.UUID) *ReviewUpdateOne {
+	ruo.mutation.SetReviwedToolID(id)
+	return ruo
+}
+
+// SetNillableReviwedToolID sets the "reviwedTool" edge to the Tool entity by ID if the given value is not nil.
+func (ruo *ReviewUpdateOne) SetNillableReviwedToolID(id *uuid.UUID) *ReviewUpdateOne {
+	if id != nil {
+		ruo = ruo.SetReviwedToolID(*id)
+	}
+	return ruo
+}
+
+// SetReviwedTool sets the "reviwedTool" edge to the Tool entity.
+func (ruo *ReviewUpdateOne) SetReviwedTool(t *Tool) *ReviewUpdateOne {
+	return ruo.SetReviwedToolID(t.ID)
+}
+
 // Mutation returns the ReviewMutation object of the builder.
 func (ruo *ReviewUpdateOne) Mutation() *ReviewMutation {
 	return ruo.mutation
+}
+
+// ClearReviewer clears the "reviewer" edge to the User entity.
+func (ruo *ReviewUpdateOne) ClearReviewer() *ReviewUpdateOne {
+	ruo.mutation.ClearReviewer()
+	return ruo
+}
+
+// ClearReviwedTool clears the "reviwedTool" edge to the Tool entity.
+func (ruo *ReviewUpdateOne) ClearReviwedTool() *ReviewUpdateOne {
+	ruo.mutation.ClearReviwedTool()
+	return ruo
 }
 
 // Where appends a list predicates to the ReviewUpdate builder.
@@ -281,6 +442,64 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 	}
 	if value, ok := ruo.mutation.CreatedAt(); ok {
 		_spec.SetField(review.FieldCreatedAt, field.TypeTime, value)
+	}
+	if ruo.mutation.ReviewerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   review.ReviewerTable,
+			Columns: []string{review.ReviewerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.ReviewerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   review.ReviewerTable,
+			Columns: []string{review.ReviewerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.ReviwedToolCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   review.ReviwedToolTable,
+			Columns: []string{review.ReviwedToolColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tool.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.ReviwedToolIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   review.ReviwedToolTable,
+			Columns: []string{review.ReviwedToolColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tool.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Review{config: ruo.config}
 	_spec.Assign = _node.assignValues

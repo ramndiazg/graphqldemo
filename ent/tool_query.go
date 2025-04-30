@@ -4,8 +4,10 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"graphQlDemo/ent/predicate"
+	"graphQlDemo/ent/review"
 	"graphQlDemo/ent/tool"
 	"math"
 
@@ -19,12 +21,14 @@ import (
 // ToolQuery is the builder for querying Tool entities.
 type ToolQuery struct {
 	config
-	ctx        *QueryContext
-	order      []tool.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Tool
-	modifiers  []func(*sql.Selector)
-	loadTotal  []func(context.Context, []*Tool) error
+	ctx              *QueryContext
+	order            []tool.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Tool
+	withReviews      *ReviewQuery
+	modifiers        []func(*sql.Selector)
+	loadTotal        []func(context.Context, []*Tool) error
+	withNamedReviews map[string]*ReviewQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,6 +63,28 @@ func (tq *ToolQuery) Unique(unique bool) *ToolQuery {
 func (tq *ToolQuery) Order(o ...tool.OrderOption) *ToolQuery {
 	tq.order = append(tq.order, o...)
 	return tq
+}
+
+// QueryReviews chains the current query on the "reviews" edge.
+func (tq *ToolQuery) QueryReviews() *ReviewQuery {
+	query := (&ReviewClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(tool.Table, tool.FieldID, selector),
+			sqlgraph.To(review.Table, review.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, tool.ReviewsTable, tool.ReviewsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Tool entity from the query.
@@ -248,15 +274,27 @@ func (tq *ToolQuery) Clone() *ToolQuery {
 		return nil
 	}
 	return &ToolQuery{
-		config:     tq.config,
-		ctx:        tq.ctx.Clone(),
-		order:      append([]tool.OrderOption{}, tq.order...),
-		inters:     append([]Interceptor{}, tq.inters...),
-		predicates: append([]predicate.Tool{}, tq.predicates...),
+		config:      tq.config,
+		ctx:         tq.ctx.Clone(),
+		order:       append([]tool.OrderOption{}, tq.order...),
+		inters:      append([]Interceptor{}, tq.inters...),
+		predicates:  append([]predicate.Tool{}, tq.predicates...),
+		withReviews: tq.withReviews.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
 	}
+}
+
+// WithReviews tells the query-builder to eager-load the nodes that are connected to
+// the "reviews" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *ToolQuery) WithReviews(opts ...func(*ReviewQuery)) *ToolQuery {
+	query := (&ReviewClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withReviews = query
+	return tq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -335,8 +373,11 @@ func (tq *ToolQuery) prepareQuery(ctx context.Context) error {
 
 func (tq *ToolQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Tool, error) {
 	var (
-		nodes = []*Tool{}
-		_spec = tq.querySpec()
+		nodes       = []*Tool{}
+		_spec       = tq.querySpec()
+		loadedTypes = [1]bool{
+			tq.withReviews != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Tool).scanValues(nil, columns)
@@ -344,6 +385,7 @@ func (tq *ToolQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Tool, e
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Tool{config: tq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if len(tq.modifiers) > 0 {
@@ -358,12 +400,58 @@ func (tq *ToolQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Tool, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := tq.withReviews; query != nil {
+		if err := tq.loadReviews(ctx, query, nodes,
+			func(n *Tool) { n.Edges.Reviews = []*Review{} },
+			func(n *Tool, e *Review) { n.Edges.Reviews = append(n.Edges.Reviews, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range tq.withNamedReviews {
+		if err := tq.loadReviews(ctx, query, nodes,
+			func(n *Tool) { n.appendNamedReviews(name) },
+			func(n *Tool, e *Review) { n.appendNamedReviews(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for i := range tq.loadTotal {
 		if err := tq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
+}
+
+func (tq *ToolQuery) loadReviews(ctx context.Context, query *ReviewQuery, nodes []*Tool, init func(*Tool), assign func(*Tool, *Review)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Tool)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Review(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(tool.ReviewsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.tool_reviews
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "tool_reviews" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "tool_reviews" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (tq *ToolQuery) sqlCount(ctx context.Context) (int, error) {
@@ -448,6 +536,20 @@ func (tq *ToolQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedReviews tells the query-builder to eager-load the nodes that are connected to the "reviews"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (tq *ToolQuery) WithNamedReviews(name string, opts ...func(*ReviewQuery)) *ToolQuery {
+	query := (&ReviewClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if tq.withNamedReviews == nil {
+		tq.withNamedReviews = make(map[string]*ReviewQuery)
+	}
+	tq.withNamedReviews[name] = query
+	return tq
 }
 
 // ToolGroupBy is the group-by builder for Tool entities.

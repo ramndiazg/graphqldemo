@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -20,8 +21,26 @@ const (
 	FieldComment = "comment"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeReviewer holds the string denoting the reviewer edge name in mutations.
+	EdgeReviewer = "reviewer"
+	// EdgeReviwedTool holds the string denoting the reviwedtool edge name in mutations.
+	EdgeReviwedTool = "reviwedTool"
 	// Table holds the table name of the review in the database.
 	Table = "reviews"
+	// ReviewerTable is the table that holds the reviewer relation/edge.
+	ReviewerTable = "reviews"
+	// ReviewerInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	ReviewerInverseTable = "users"
+	// ReviewerColumn is the table column denoting the reviewer relation/edge.
+	ReviewerColumn = "user_reviews"
+	// ReviwedToolTable is the table that holds the reviwedTool relation/edge.
+	ReviwedToolTable = "reviews"
+	// ReviwedToolInverseTable is the table name for the Tool entity.
+	// It exists in this package in order to avoid circular dependency with the "tool" package.
+	ReviwedToolInverseTable = "tools"
+	// ReviwedToolColumn is the table column denoting the reviwedTool relation/edge.
+	ReviwedToolColumn = "tool_reviews"
 )
 
 // Columns holds all SQL columns for review fields.
@@ -32,10 +51,22 @@ var Columns = []string{
 	FieldCreatedAt,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "reviews"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"tool_reviews",
+	"user_reviews",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -70,4 +101,32 @@ func ByComment(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByReviewerField orders the results by reviewer field.
+func ByReviewerField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReviewerStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByReviwedToolField orders the results by reviwedTool field.
+func ByReviwedToolField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReviwedToolStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newReviewerStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ReviewerInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ReviewerTable, ReviewerColumn),
+	)
+}
+func newReviwedToolStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ReviwedToolInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ReviwedToolTable, ReviwedToolColumn),
+	)
 }

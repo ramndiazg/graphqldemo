@@ -32,6 +32,28 @@ func (r *ReviewQuery) collectField(ctx context.Context, oneNode bool, opCtx *gra
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
+
+		case "reviewer":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserClient{config: r.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, userImplementors)...); err != nil {
+				return err
+			}
+			r.withReviewer = query
+
+		case "reviwedtool":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ToolClient{config: r.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, toolImplementors)...); err != nil {
+				return err
+			}
+			r.withReviwedTool = query
 		case "rating":
 			if _, ok := fieldSeen[review.FieldRating]; !ok {
 				selectedFields = append(selectedFields, review.FieldRating)
@@ -106,6 +128,19 @@ func (t *ToolQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
+
+		case "reviews":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ReviewClient{config: t.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, reviewImplementors)...); err != nil {
+				return err
+			}
+			t.WithNamedReviews(alias, func(wq *ReviewQuery) {
+				*wq = *query
+			})
 		case "name":
 			if _, ok := fieldSeen[tool.FieldName]; !ok {
 				selectedFields = append(selectedFields, tool.FieldName)
@@ -195,6 +230,19 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
+
+		case "reviews":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ReviewClient{config: u.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, reviewImplementors)...); err != nil {
+				return err
+			}
+			u.WithNamedReviews(alias, func(wq *ReviewQuery) {
+				*wq = *query
+			})
 		case "name":
 			if _, ok := fieldSeen[user.FieldName]; !ok {
 				selectedFields = append(selectedFields, user.FieldName)

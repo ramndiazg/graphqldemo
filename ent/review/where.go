@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -213,6 +214,52 @@ func CreatedAtLT(v time.Time) predicate.Review {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.Review {
 	return predicate.Review(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// HasReviewer applies the HasEdge predicate on the "reviewer" edge.
+func HasReviewer() predicate.Review {
+	return predicate.Review(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ReviewerTable, ReviewerColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasReviewerWith applies the HasEdge predicate on the "reviewer" edge with a given conditions (other predicates).
+func HasReviewerWith(preds ...predicate.User) predicate.Review {
+	return predicate.Review(func(s *sql.Selector) {
+		step := newReviewerStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasReviwedTool applies the HasEdge predicate on the "reviwedTool" edge.
+func HasReviwedTool() predicate.Review {
+	return predicate.Review(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ReviwedToolTable, ReviwedToolColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasReviwedToolWith applies the HasEdge predicate on the "reviwedTool" edge with a given conditions (other predicates).
+func HasReviwedToolWith(preds ...predicate.Tool) predicate.Review {
+	return predicate.Review(func(s *sql.Selector) {
+		step := newReviwedToolStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

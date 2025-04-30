@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"graphQlDemo/ent/review"
+	"graphQlDemo/ent/tool"
+	"graphQlDemo/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -59,6 +61,44 @@ func (rc *ReviewCreate) SetNillableID(u *uuid.UUID) *ReviewCreate {
 		rc.SetID(*u)
 	}
 	return rc
+}
+
+// SetReviewerID sets the "reviewer" edge to the User entity by ID.
+func (rc *ReviewCreate) SetReviewerID(id uuid.UUID) *ReviewCreate {
+	rc.mutation.SetReviewerID(id)
+	return rc
+}
+
+// SetNillableReviewerID sets the "reviewer" edge to the User entity by ID if the given value is not nil.
+func (rc *ReviewCreate) SetNillableReviewerID(id *uuid.UUID) *ReviewCreate {
+	if id != nil {
+		rc = rc.SetReviewerID(*id)
+	}
+	return rc
+}
+
+// SetReviewer sets the "reviewer" edge to the User entity.
+func (rc *ReviewCreate) SetReviewer(u *User) *ReviewCreate {
+	return rc.SetReviewerID(u.ID)
+}
+
+// SetReviwedToolID sets the "reviwedTool" edge to the Tool entity by ID.
+func (rc *ReviewCreate) SetReviwedToolID(id uuid.UUID) *ReviewCreate {
+	rc.mutation.SetReviwedToolID(id)
+	return rc
+}
+
+// SetNillableReviwedToolID sets the "reviwedTool" edge to the Tool entity by ID if the given value is not nil.
+func (rc *ReviewCreate) SetNillableReviwedToolID(id *uuid.UUID) *ReviewCreate {
+	if id != nil {
+		rc = rc.SetReviwedToolID(*id)
+	}
+	return rc
+}
+
+// SetReviwedTool sets the "reviwedTool" edge to the Tool entity.
+func (rc *ReviewCreate) SetReviwedTool(t *Tool) *ReviewCreate {
+	return rc.SetReviwedToolID(t.ID)
 }
 
 // Mutation returns the ReviewMutation object of the builder.
@@ -163,6 +203,40 @@ func (rc *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 	if value, ok := rc.mutation.CreatedAt(); ok {
 		_spec.SetField(review.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := rc.mutation.ReviewerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   review.ReviewerTable,
+			Columns: []string{review.ReviewerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_reviews = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.ReviwedToolIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   review.ReviwedToolTable,
+			Columns: []string{review.ReviwedToolColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tool.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.tool_reviews = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

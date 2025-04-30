@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"graphQlDemo/ent/review"
 	"graphQlDemo/ent/tool"
 	"time"
 
@@ -77,6 +78,21 @@ func (tc *ToolCreate) SetNillableID(u *uuid.UUID) *ToolCreate {
 		tc.SetID(*u)
 	}
 	return tc
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (tc *ToolCreate) AddReviewIDs(ids ...uuid.UUID) *ToolCreate {
+	tc.mutation.AddReviewIDs(ids...)
+	return tc
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (tc *ToolCreate) AddReviews(r ...*Review) *ToolCreate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tc.AddReviewIDs(ids...)
 }
 
 // Mutation returns the ToolMutation object of the builder.
@@ -202,6 +218,22 @@ func (tc *ToolCreate) createSpec() (*Tool, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.CreatedAt(); ok {
 		_spec.SetField(tool.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := tc.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   tool.ReviewsTable,
+			Columns: []string{tool.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

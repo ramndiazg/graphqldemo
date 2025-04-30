@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/contrib/entgql"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
@@ -27,7 +28,14 @@ func (Review) Fields() []ent.Field {
 
 // Edges of the Review.
 func (Review) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("reviewer", User.Type).
+			Ref("reviews").
+			Unique(),
+		edge.From("reviwedTool", Tool.Type).
+			Ref("reviews").
+			Unique(),
+	}
 }
 
 func (Review) Annotations() []schema.Annotation {

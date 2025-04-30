@@ -29,8 +29,33 @@ type Tool struct {
 	// ImageURL holds the value of the "image_url" field.
 	ImageURL string `json:"image_url,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt    time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ToolQuery when eager-loading is set.
+	Edges        ToolEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// ToolEdges holds the relations/edges for other nodes in the graph.
+type ToolEdges struct {
+	// Reviews holds the value of the reviews edge.
+	Reviews []*Review `json:"reviews,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+	// totalCount holds the count of the edges above.
+	totalCount [1]map[string]int
+
+	namedReviews map[string][]*Review
+}
+
+// ReviewsOrErr returns the Reviews value or an error if the edge
+// was not loaded in eager-loading.
+func (e ToolEdges) ReviewsOrErr() ([]*Review, error) {
+	if e.loadedTypes[0] {
+		return e.Reviews, nil
+	}
+	return nil, &NotLoadedError{edge: "reviews"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -114,6 +139,11 @@ func (t *Tool) Value(name string) (ent.Value, error) {
 	return t.selectValues.Get(name)
 }
 
+// QueryReviews queries the "reviews" edge of the Tool entity.
+func (t *Tool) QueryReviews() *ReviewQuery {
+	return NewToolClient(t.config).QueryReviews(t)
+}
+
 // Update returns a builder for updating this Tool.
 // Note that you need to call Tool.Unwrap() before calling this method if this Tool
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -156,6 +186,30 @@ func (t *Tool) String() string {
 	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedReviews returns the Reviews named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (t *Tool) NamedReviews(name string) ([]*Review, error) {
+	if t.Edges.namedReviews == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := t.Edges.namedReviews[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (t *Tool) appendNamedReviews(name string, edges ...*Review) {
+	if t.Edges.namedReviews == nil {
+		t.Edges.namedReviews = make(map[string][]*Review)
+	}
+	if len(edges) == 0 {
+		t.Edges.namedReviews[name] = []*Review{}
+	} else {
+		t.Edges.namedReviews[name] = append(t.Edges.namedReviews[name], edges...)
+	}
 }
 
 // Tools is a parsable slice of Tool.

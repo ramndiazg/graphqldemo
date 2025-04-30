@@ -7,12 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"graphQlDemo/ent/predicate"
+	"graphQlDemo/ent/review"
 	"graphQlDemo/ent/tool"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // ToolUpdate is the builder for updating Tool entities.
@@ -112,9 +114,45 @@ func (tu *ToolUpdate) SetNillableCreatedAt(t *time.Time) *ToolUpdate {
 	return tu
 }
 
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (tu *ToolUpdate) AddReviewIDs(ids ...uuid.UUID) *ToolUpdate {
+	tu.mutation.AddReviewIDs(ids...)
+	return tu
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (tu *ToolUpdate) AddReviews(r ...*Review) *ToolUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tu.AddReviewIDs(ids...)
+}
+
 // Mutation returns the ToolMutation object of the builder.
 func (tu *ToolUpdate) Mutation() *ToolMutation {
 	return tu.mutation
+}
+
+// ClearReviews clears all "reviews" edges to the Review entity.
+func (tu *ToolUpdate) ClearReviews() *ToolUpdate {
+	tu.mutation.ClearReviews()
+	return tu
+}
+
+// RemoveReviewIDs removes the "reviews" edge to Review entities by IDs.
+func (tu *ToolUpdate) RemoveReviewIDs(ids ...uuid.UUID) *ToolUpdate {
+	tu.mutation.RemoveReviewIDs(ids...)
+	return tu
+}
+
+// RemoveReviews removes "reviews" edges to Review entities.
+func (tu *ToolUpdate) RemoveReviews(r ...*Review) *ToolUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tu.RemoveReviewIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -170,6 +208,51 @@ func (tu *ToolUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.CreatedAt(); ok {
 		_spec.SetField(tool.FieldCreatedAt, field.TypeTime, value)
+	}
+	if tu.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   tool.ReviewsTable,
+			Columns: []string{tool.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedReviewsIDs(); len(nodes) > 0 && !tu.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   tool.ReviewsTable,
+			Columns: []string{tool.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   tool.ReviewsTable,
+			Columns: []string{tool.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -275,9 +358,45 @@ func (tuo *ToolUpdateOne) SetNillableCreatedAt(t *time.Time) *ToolUpdateOne {
 	return tuo
 }
 
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (tuo *ToolUpdateOne) AddReviewIDs(ids ...uuid.UUID) *ToolUpdateOne {
+	tuo.mutation.AddReviewIDs(ids...)
+	return tuo
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (tuo *ToolUpdateOne) AddReviews(r ...*Review) *ToolUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tuo.AddReviewIDs(ids...)
+}
+
 // Mutation returns the ToolMutation object of the builder.
 func (tuo *ToolUpdateOne) Mutation() *ToolMutation {
 	return tuo.mutation
+}
+
+// ClearReviews clears all "reviews" edges to the Review entity.
+func (tuo *ToolUpdateOne) ClearReviews() *ToolUpdateOne {
+	tuo.mutation.ClearReviews()
+	return tuo
+}
+
+// RemoveReviewIDs removes the "reviews" edge to Review entities by IDs.
+func (tuo *ToolUpdateOne) RemoveReviewIDs(ids ...uuid.UUID) *ToolUpdateOne {
+	tuo.mutation.RemoveReviewIDs(ids...)
+	return tuo
+}
+
+// RemoveReviews removes "reviews" edges to Review entities.
+func (tuo *ToolUpdateOne) RemoveReviews(r ...*Review) *ToolUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tuo.RemoveReviewIDs(ids...)
 }
 
 // Where appends a list predicates to the ToolUpdate builder.
@@ -363,6 +482,51 @@ func (tuo *ToolUpdateOne) sqlSave(ctx context.Context) (_node *Tool, err error) 
 	}
 	if value, ok := tuo.mutation.CreatedAt(); ok {
 		_spec.SetField(tool.FieldCreatedAt, field.TypeTime, value)
+	}
+	if tuo.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   tool.ReviewsTable,
+			Columns: []string{tool.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedReviewsIDs(); len(nodes) > 0 && !tuo.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   tool.ReviewsTable,
+			Columns: []string{tool.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   tool.ReviewsTable,
+			Columns: []string{tool.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Tool{config: tuo.config}
 	_spec.Assign = _node.assignValues

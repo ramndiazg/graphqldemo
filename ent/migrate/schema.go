@@ -14,12 +14,28 @@ var (
 		{Name: "rating", Type: field.TypeInt},
 		{Name: "comment", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tool_reviews", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_reviews", Type: field.TypeUUID, Nullable: true},
 	}
 	// ReviewsTable holds the schema information for the "reviews" table.
 	ReviewsTable = &schema.Table{
 		Name:       "reviews",
 		Columns:    ReviewsColumns,
 		PrimaryKey: []*schema.Column{ReviewsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "reviews_tools_reviews",
+				Columns:    []*schema.Column{ReviewsColumns[4]},
+				RefColumns: []*schema.Column{ToolsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "reviews_users_reviews",
+				Columns:    []*schema.Column{ReviewsColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// ToolsColumns holds the columns for the "tools" table.
 	ToolsColumns = []*schema.Column{
@@ -61,4 +77,6 @@ var (
 )
 
 func init() {
+	ReviewsTable.ForeignKeys[0].RefTable = ToolsTable
+	ReviewsTable.ForeignKeys[1].RefTable = UsersTable
 }
