@@ -5,9 +5,12 @@ package ent
 import (
 	"context"
 	"errors"
+	"fmt"
 	"graphQlDemo/ent/review"
 	"graphQlDemo/ent/tool"
 	"graphQlDemo/ent/user"
+	"io"
+	"strconv"
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
@@ -306,6 +309,71 @@ func (r *ReviewQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// ReviewOrderFieldCreateTime orders Review by create_time.
+	ReviewOrderFieldCreateTime = &ReviewOrderField{
+		Value: func(r *Review) (ent.Value, error) {
+			return r.CreateTime, nil
+		},
+		column: review.FieldCreateTime,
+		toTerm: review.ByCreateTime,
+		toCursor: func(r *Review) Cursor {
+			return Cursor{
+				ID:    r.ID,
+				Value: r.CreateTime,
+			}
+		},
+	}
+	// ReviewOrderFieldUpdateTime orders Review by update_time.
+	ReviewOrderFieldUpdateTime = &ReviewOrderField{
+		Value: func(r *Review) (ent.Value, error) {
+			return r.UpdateTime, nil
+		},
+		column: review.FieldUpdateTime,
+		toTerm: review.ByUpdateTime,
+		toCursor: func(r *Review) Cursor {
+			return Cursor{
+				ID:    r.ID,
+				Value: r.UpdateTime,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f ReviewOrderField) String() string {
+	var str string
+	switch f.column {
+	case ReviewOrderFieldCreateTime.column:
+		str = "CREATE_TIME"
+	case ReviewOrderFieldUpdateTime.column:
+		str = "UPDATE_TIME"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f ReviewOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *ReviewOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("ReviewOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATE_TIME":
+		*f = *ReviewOrderFieldCreateTime
+	case "UPDATE_TIME":
+		*f = *ReviewOrderFieldUpdateTime
+	default:
+		return fmt.Errorf("%s is not a valid ReviewOrderField", str)
+	}
+	return nil
+}
+
 // ReviewOrderField defines the ordering field of Review.
 type ReviewOrderField struct {
 	// Value extracts the ordering value from the given Review.
@@ -555,6 +623,71 @@ func (t *ToolQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// ToolOrderFieldCreateTime orders Tool by create_time.
+	ToolOrderFieldCreateTime = &ToolOrderField{
+		Value: func(t *Tool) (ent.Value, error) {
+			return t.CreateTime, nil
+		},
+		column: tool.FieldCreateTime,
+		toTerm: tool.ByCreateTime,
+		toCursor: func(t *Tool) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.CreateTime,
+			}
+		},
+	}
+	// ToolOrderFieldUpdateTime orders Tool by update_time.
+	ToolOrderFieldUpdateTime = &ToolOrderField{
+		Value: func(t *Tool) (ent.Value, error) {
+			return t.UpdateTime, nil
+		},
+		column: tool.FieldUpdateTime,
+		toTerm: tool.ByUpdateTime,
+		toCursor: func(t *Tool) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.UpdateTime,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f ToolOrderField) String() string {
+	var str string
+	switch f.column {
+	case ToolOrderFieldCreateTime.column:
+		str = "CREATE_TIME"
+	case ToolOrderFieldUpdateTime.column:
+		str = "UPDATE_TIME"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f ToolOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *ToolOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("ToolOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATE_TIME":
+		*f = *ToolOrderFieldCreateTime
+	case "UPDATE_TIME":
+		*f = *ToolOrderFieldUpdateTime
+	default:
+		return fmt.Errorf("%s is not a valid ToolOrderField", str)
+	}
+	return nil
+}
+
 // ToolOrderField defines the ordering field of Tool.
 type ToolOrderField struct {
 	// Value extracts the ordering value from the given Tool.
@@ -802,6 +935,71 @@ func (u *UserQuery) Paginate(
 	}
 	conn.build(nodes, pager, after, first, before, last)
 	return conn, nil
+}
+
+var (
+	// UserOrderFieldCreateTime orders User by create_time.
+	UserOrderFieldCreateTime = &UserOrderField{
+		Value: func(u *User) (ent.Value, error) {
+			return u.CreateTime, nil
+		},
+		column: user.FieldCreateTime,
+		toTerm: user.ByCreateTime,
+		toCursor: func(u *User) Cursor {
+			return Cursor{
+				ID:    u.ID,
+				Value: u.CreateTime,
+			}
+		},
+	}
+	// UserOrderFieldUpdateTime orders User by update_time.
+	UserOrderFieldUpdateTime = &UserOrderField{
+		Value: func(u *User) (ent.Value, error) {
+			return u.UpdateTime, nil
+		},
+		column: user.FieldUpdateTime,
+		toTerm: user.ByUpdateTime,
+		toCursor: func(u *User) Cursor {
+			return Cursor{
+				ID:    u.ID,
+				Value: u.UpdateTime,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f UserOrderField) String() string {
+	var str string
+	switch f.column {
+	case UserOrderFieldCreateTime.column:
+		str = "CREATE_TIME"
+	case UserOrderFieldUpdateTime.column:
+		str = "UPDATE_TIME"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f UserOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *UserOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("UserOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATE_TIME":
+		*f = *UserOrderFieldCreateTime
+	case "UPDATE_TIME":
+		*f = *UserOrderFieldUpdateTime
+	default:
+		return fmt.Errorf("%s is not a valid UserOrderField", str)
+	}
+	return nil
 }
 
 // UserOrderField defines the ordering field of User.

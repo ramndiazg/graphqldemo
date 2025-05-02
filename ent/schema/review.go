@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	mixin "graphQlDemo/mixins"
 )
 
 // Review holds the schema definition for the Review entity.
@@ -43,4 +44,10 @@ func (Review) Annotations() []schema.Annotation {
         entgql.QueryField(),
         entgql.Mutations(entgql.MutationCreate()),
     }
+}
+
+func (Review) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixin.ToolTime{},
+	}
 }

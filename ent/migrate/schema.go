@@ -11,6 +11,8 @@ var (
 	// ReviewsColumns holds the columns for the "reviews" table.
 	ReviewsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "rating", Type: field.TypeInt},
 		{Name: "comment", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
@@ -25,13 +27,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "reviews_tools_reviews",
-				Columns:    []*schema.Column{ReviewsColumns[4]},
+				Columns:    []*schema.Column{ReviewsColumns[6]},
 				RefColumns: []*schema.Column{ToolsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "reviews_users_reviews",
-				Columns:    []*schema.Column{ReviewsColumns[5]},
+				Columns:    []*schema.Column{ReviewsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -40,6 +42,8 @@ var (
 	// ToolsColumns holds the columns for the "tools" table.
 	ToolsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "description", Type: field.TypeString},
 		{Name: "category", Type: field.TypeString},
@@ -56,6 +60,8 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString},
 		{Name: "username", Type: field.TypeString, Unique: true},
 		{Name: "email", Type: field.TypeString, Unique: true},

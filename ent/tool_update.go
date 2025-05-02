@@ -30,6 +30,12 @@ func (tu *ToolUpdate) Where(ps ...predicate.Tool) *ToolUpdate {
 	return tu
 }
 
+// SetUpdateTime sets the "update_time" field.
+func (tu *ToolUpdate) SetUpdateTime(t time.Time) *ToolUpdate {
+	tu.mutation.SetUpdateTime(t)
+	return tu
+}
+
 // SetName sets the "name" field.
 func (tu *ToolUpdate) SetName(s string) *ToolUpdate {
 	tu.mutation.SetName(s)
@@ -157,6 +163,7 @@ func (tu *ToolUpdate) RemoveReviews(r ...*Review) *ToolUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (tu *ToolUpdate) Save(ctx context.Context) (int, error) {
+	tu.defaults()
 	return withHooks(ctx, tu.sqlSave, tu.mutation, tu.hooks)
 }
 
@@ -182,6 +189,14 @@ func (tu *ToolUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (tu *ToolUpdate) defaults() {
+	if _, ok := tu.mutation.UpdateTime(); !ok {
+		v := tool.UpdateDefaultUpdateTime()
+		tu.mutation.SetUpdateTime(v)
+	}
+}
+
 func (tu *ToolUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(tool.Table, tool.Columns, sqlgraph.NewFieldSpec(tool.FieldID, field.TypeUUID))
 	if ps := tu.mutation.predicates; len(ps) > 0 {
@@ -190,6 +205,9 @@ func (tu *ToolUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := tu.mutation.UpdateTime(); ok {
+		_spec.SetField(tool.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := tu.mutation.Name(); ok {
 		_spec.SetField(tool.FieldName, field.TypeString, value)
@@ -272,6 +290,12 @@ type ToolUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *ToolMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (tuo *ToolUpdateOne) SetUpdateTime(t time.Time) *ToolUpdateOne {
+	tuo.mutation.SetUpdateTime(t)
+	return tuo
 }
 
 // SetName sets the "name" field.
@@ -414,6 +438,7 @@ func (tuo *ToolUpdateOne) Select(field string, fields ...string) *ToolUpdateOne 
 
 // Save executes the query and returns the updated Tool entity.
 func (tuo *ToolUpdateOne) Save(ctx context.Context) (*Tool, error) {
+	tuo.defaults()
 	return withHooks(ctx, tuo.sqlSave, tuo.mutation, tuo.hooks)
 }
 
@@ -436,6 +461,14 @@ func (tuo *ToolUpdateOne) Exec(ctx context.Context) error {
 func (tuo *ToolUpdateOne) ExecX(ctx context.Context) {
 	if err := tuo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (tuo *ToolUpdateOne) defaults() {
+	if _, ok := tuo.mutation.UpdateTime(); !ok {
+		v := tool.UpdateDefaultUpdateTime()
+		tuo.mutation.SetUpdateTime(v)
 	}
 }
 
@@ -464,6 +497,9 @@ func (tuo *ToolUpdateOne) sqlSave(ctx context.Context) (_node *Tool, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := tuo.mutation.UpdateTime(); ok {
+		_spec.SetField(tool.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := tuo.mutation.Name(); ok {
 		_spec.SetField(tool.FieldName, field.TypeString, value)

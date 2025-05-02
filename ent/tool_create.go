@@ -22,6 +22,34 @@ type ToolCreate struct {
 	hooks    []Hook
 }
 
+// SetCreateTime sets the "create_time" field.
+func (tc *ToolCreate) SetCreateTime(t time.Time) *ToolCreate {
+	tc.mutation.SetCreateTime(t)
+	return tc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (tc *ToolCreate) SetNillableCreateTime(t *time.Time) *ToolCreate {
+	if t != nil {
+		tc.SetCreateTime(*t)
+	}
+	return tc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (tc *ToolCreate) SetUpdateTime(t time.Time) *ToolCreate {
+	tc.mutation.SetUpdateTime(t)
+	return tc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (tc *ToolCreate) SetNillableUpdateTime(t *time.Time) *ToolCreate {
+	if t != nil {
+		tc.SetUpdateTime(*t)
+	}
+	return tc
+}
+
 // SetName sets the "name" field.
 func (tc *ToolCreate) SetName(s string) *ToolCreate {
 	tc.mutation.SetName(s)
@@ -130,6 +158,14 @@ func (tc *ToolCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (tc *ToolCreate) defaults() {
+	if _, ok := tc.mutation.CreateTime(); !ok {
+		v := tool.DefaultCreateTime()
+		tc.mutation.SetCreateTime(v)
+	}
+	if _, ok := tc.mutation.UpdateTime(); !ok {
+		v := tool.DefaultUpdateTime()
+		tc.mutation.SetUpdateTime(v)
+	}
 	if _, ok := tc.mutation.CreatedAt(); !ok {
 		v := tool.DefaultCreatedAt()
 		tc.mutation.SetCreatedAt(v)
@@ -142,6 +178,12 @@ func (tc *ToolCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (tc *ToolCreate) check() error {
+	if _, ok := tc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Tool.create_time"`)}
+	}
+	if _, ok := tc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Tool.update_time"`)}
+	}
 	if _, ok := tc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Tool.name"`)}
 	}
@@ -194,6 +236,14 @@ func (tc *ToolCreate) createSpec() (*Tool, *sqlgraph.CreateSpec) {
 	if id, ok := tc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := tc.mutation.CreateTime(); ok {
+		_spec.SetField(tool.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := tc.mutation.UpdateTime(); ok {
+		_spec.SetField(tool.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
 	}
 	if value, ok := tc.mutation.Name(); ok {
 		_spec.SetField(tool.FieldName, field.TypeString, value)

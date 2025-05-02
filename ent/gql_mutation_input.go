@@ -10,6 +10,8 @@ import (
 
 // CreateReviewInput represents a mutation input for creating reviews.
 type CreateReviewInput struct {
+	CreateTime    *time.Time
+	UpdateTime    *time.Time
 	Rating        int
 	Comment       string
 	CreatedAt     *time.Time
@@ -19,6 +21,12 @@ type CreateReviewInput struct {
 
 // Mutate applies the CreateReviewInput on the ReviewMutation builder.
 func (i *CreateReviewInput) Mutate(m *ReviewMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	m.SetRating(i.Rating)
 	m.SetComment(i.Comment)
 	if v := i.CreatedAt; v != nil {
@@ -40,6 +48,8 @@ func (c *ReviewCreate) SetInput(i CreateReviewInput) *ReviewCreate {
 
 // CreateToolInput represents a mutation input for creating tools.
 type CreateToolInput struct {
+	CreateTime  *time.Time
+	UpdateTime  *time.Time
 	Name        string
 	Description string
 	Category    string
@@ -51,6 +61,12 @@ type CreateToolInput struct {
 
 // Mutate applies the CreateToolInput on the ToolMutation builder.
 func (i *CreateToolInput) Mutate(m *ToolMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	m.SetName(i.Name)
 	m.SetDescription(i.Description)
 	m.SetCategory(i.Category)
@@ -72,6 +88,8 @@ func (c *ToolCreate) SetInput(i CreateToolInput) *ToolCreate {
 
 // CreateUserInput represents a mutation input for creating users.
 type CreateUserInput struct {
+	CreateTime   *time.Time
+	UpdateTime   *time.Time
 	Name         string
 	Username     string
 	Email        string
@@ -82,6 +100,12 @@ type CreateUserInput struct {
 
 // Mutate applies the CreateUserInput on the UserMutation builder.
 func (i *CreateUserInput) Mutate(m *UserMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
 	m.SetName(i.Name)
 	m.SetUsername(i.Username)
 	m.SetEmail(i.Email)

@@ -20,6 +20,10 @@ type Review struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// The time this object was created at
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// The last time this object was mutated
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Rating holds the value of the "rating" field.
 	Rating int `json:"rating,omitempty"`
 	// Comment holds the value of the "comment" field.
@@ -78,7 +82,7 @@ func (*Review) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case review.FieldComment:
 			values[i] = new(sql.NullString)
-		case review.FieldCreatedAt:
+		case review.FieldCreateTime, review.FieldUpdateTime, review.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case review.FieldID:
 			values[i] = new(uuid.UUID)
@@ -106,6 +110,18 @@ func (r *Review) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				r.ID = *value
+			}
+		case review.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				r.CreateTime = value.Time
+			}
+		case review.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				r.UpdateTime = value.Time
 			}
 		case review.FieldRating:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -185,6 +201,12 @@ func (r *Review) String() string {
 	var builder strings.Builder
 	builder.WriteString("Review(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(r.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(r.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("rating=")
 	builder.WriteString(fmt.Sprintf("%v", r.Rating))
 	builder.WriteString(", ")

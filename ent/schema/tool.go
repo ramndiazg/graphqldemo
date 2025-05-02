@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	mixin "graphQlDemo/mixins"
 )
 
 // Tool holds the schema definition for the Tool entity.
@@ -41,4 +42,10 @@ func (Tool) Annotations() []schema.Annotation {
         entgql.QueryField(),
         entgql.Mutations(entgql.MutationCreate()),
     }
+}
+
+func (Tool) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixin.ToolTime{},
+	}
 }

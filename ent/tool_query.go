@@ -303,12 +303,12 @@ func (tq *ToolQuery) WithReviews(opts ...func(*ReviewQuery)) *ToolQuery {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Tool.Query().
-//		GroupBy(tool.FieldName).
+//		GroupBy(tool.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (tq *ToolQuery) GroupBy(field string, fields ...string) *ToolGroupBy {
@@ -326,11 +326,11 @@ func (tq *ToolQuery) GroupBy(field string, fields ...string) *ToolGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Tool.Query().
-//		Select(tool.FieldName).
+//		Select(tool.FieldCreateTime).
 //		Scan(ctx, &v)
 func (tq *ToolQuery) Select(fields ...string) *ToolSelect {
 	tq.ctx.Fields = append(tq.ctx.Fields, fields...)

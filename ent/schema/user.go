@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	mixin "graphQlDemo/mixins"
 )
 
 // User holds the schema definition for the User entity.
@@ -40,4 +41,10 @@ func (User) Annotations() []schema.Annotation {
         entgql.QueryField(),
         entgql.Mutations(entgql.MutationCreate()),
     }
+}
+
+func (User) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixin.ToolTime{},
+	}
 }

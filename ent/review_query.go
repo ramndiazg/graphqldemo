@@ -338,12 +338,12 @@ func (rq *ReviewQuery) WithReviwedTool(opts ...func(*ToolQuery)) *ReviewQuery {
 // Example:
 //
 //	var v []struct {
-//		Rating int `json:"rating,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Review.Query().
-//		GroupBy(review.FieldRating).
+//		GroupBy(review.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (rq *ReviewQuery) GroupBy(field string, fields ...string) *ReviewGroupBy {
@@ -361,11 +361,11 @@ func (rq *ReviewQuery) GroupBy(field string, fields ...string) *ReviewGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Rating int `json:"rating,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Review.Query().
-//		Select(review.FieldRating).
+//		Select(review.FieldCreateTime).
 //		Scan(ctx, &v)
 func (rq *ReviewQuery) Select(fields ...string) *ReviewSelect {
 	rq.ctx.Fields = append(rq.ctx.Fields, fields...)

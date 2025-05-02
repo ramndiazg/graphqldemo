@@ -8,6 +8,7 @@ import (
 	"graphQlDemo/ent/tool"
 	"graphQlDemo/ent/user"
 
+	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 )
 
@@ -54,6 +55,16 @@ func (r *ReviewQuery) collectField(ctx context.Context, oneNode bool, opCtx *gra
 				return err
 			}
 			r.withReviwedTool = query
+		case "createTime":
+			if _, ok := fieldSeen[review.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, review.FieldCreateTime)
+				fieldSeen[review.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[review.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, review.FieldUpdateTime)
+				fieldSeen[review.FieldUpdateTime] = struct{}{}
+			}
 		case "rating":
 			if _, ok := fieldSeen[review.FieldRating]; !ok {
 				selectedFields = append(selectedFields, review.FieldRating)
@@ -104,6 +115,28 @@ func newReviewPaginateArgs(rv map[string]any) *reviewPaginateArgs {
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &ReviewOrder{Field: &ReviewOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithReviewOrder(order))
+			}
+		case *ReviewOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithReviewOrder(v))
+			}
+		}
+	}
 	return args
 }
 
@@ -141,6 +174,16 @@ func (t *ToolQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 			t.WithNamedReviews(alias, func(wq *ReviewQuery) {
 				*wq = *query
 			})
+		case "createTime":
+			if _, ok := fieldSeen[tool.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, tool.FieldCreateTime)
+				fieldSeen[tool.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[tool.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, tool.FieldUpdateTime)
+				fieldSeen[tool.FieldUpdateTime] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[tool.FieldName]; !ok {
 				selectedFields = append(selectedFields, tool.FieldName)
@@ -206,6 +249,28 @@ func newToolPaginateArgs(rv map[string]any) *toolPaginateArgs {
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &ToolOrder{Field: &ToolOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithToolOrder(order))
+			}
+		case *ToolOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithToolOrder(v))
+			}
+		}
+	}
 	return args
 }
 
@@ -243,6 +308,16 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 			u.WithNamedReviews(alias, func(wq *ReviewQuery) {
 				*wq = *query
 			})
+		case "createTime":
+			if _, ok := fieldSeen[user.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, user.FieldCreateTime)
+				fieldSeen[user.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[user.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, user.FieldUpdateTime)
+				fieldSeen[user.FieldUpdateTime] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[user.FieldName]; !ok {
 				selectedFields = append(selectedFields, user.FieldName)
@@ -302,6 +377,28 @@ func newUserPaginateArgs(rv map[string]any) *userPaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &UserOrder{Field: &UserOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithUserOrder(order))
+			}
+		case *UserOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithUserOrder(v))
+			}
+		}
 	}
 	return args
 }

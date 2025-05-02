@@ -31,6 +31,12 @@ func (ru *ReviewUpdate) Where(ps ...predicate.Review) *ReviewUpdate {
 	return ru
 }
 
+// SetUpdateTime sets the "update_time" field.
+func (ru *ReviewUpdate) SetUpdateTime(t time.Time) *ReviewUpdate {
+	ru.mutation.SetUpdateTime(t)
+	return ru
+}
+
 // SetRating sets the "rating" field.
 func (ru *ReviewUpdate) SetRating(i int) *ReviewUpdate {
 	ru.mutation.ResetRating()
@@ -137,6 +143,7 @@ func (ru *ReviewUpdate) ClearReviwedTool() *ReviewUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (ru *ReviewUpdate) Save(ctx context.Context) (int, error) {
+	ru.defaults()
 	return withHooks(ctx, ru.sqlSave, ru.mutation, ru.hooks)
 }
 
@@ -162,6 +169,14 @@ func (ru *ReviewUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (ru *ReviewUpdate) defaults() {
+	if _, ok := ru.mutation.UpdateTime(); !ok {
+		v := review.UpdateDefaultUpdateTime()
+		ru.mutation.SetUpdateTime(v)
+	}
+}
+
 func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(review.Table, review.Columns, sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID))
 	if ps := ru.mutation.predicates; len(ps) > 0 {
@@ -170,6 +185,9 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := ru.mutation.UpdateTime(); ok {
+		_spec.SetField(review.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := ru.mutation.Rating(); ok {
 		_spec.SetField(review.FieldRating, field.TypeInt, value)
@@ -259,6 +277,12 @@ type ReviewUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *ReviewMutation
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (ruo *ReviewUpdateOne) SetUpdateTime(t time.Time) *ReviewUpdateOne {
+	ruo.mutation.SetUpdateTime(t)
+	return ruo
 }
 
 // SetRating sets the "rating" field.
@@ -380,6 +404,7 @@ func (ruo *ReviewUpdateOne) Select(field string, fields ...string) *ReviewUpdate
 
 // Save executes the query and returns the updated Review entity.
 func (ruo *ReviewUpdateOne) Save(ctx context.Context) (*Review, error) {
+	ruo.defaults()
 	return withHooks(ctx, ruo.sqlSave, ruo.mutation, ruo.hooks)
 }
 
@@ -402,6 +427,14 @@ func (ruo *ReviewUpdateOne) Exec(ctx context.Context) error {
 func (ruo *ReviewUpdateOne) ExecX(ctx context.Context) {
 	if err := ruo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (ruo *ReviewUpdateOne) defaults() {
+	if _, ok := ruo.mutation.UpdateTime(); !ok {
+		v := review.UpdateDefaultUpdateTime()
+		ruo.mutation.SetUpdateTime(v)
 	}
 }
 
@@ -430,6 +463,9 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := ruo.mutation.UpdateTime(); ok {
+		_spec.SetField(review.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := ruo.mutation.Rating(); ok {
 		_spec.SetField(review.FieldRating, field.TypeInt, value)

@@ -18,6 +18,10 @@ type User struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// The time this object was created at
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// The last time this object was mutated
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Username holds the value of the "username" field.
@@ -63,7 +67,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldName, user.FieldUsername, user.FieldEmail, user.FieldPasswordHash:
 			values[i] = new(sql.NullString)
-		case user.FieldCreatedAt:
+		case user.FieldCreateTime, user.FieldUpdateTime, user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
@@ -87,6 +91,18 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				u.ID = *value
+			}
+		case user.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				u.CreateTime = value.Time
+			}
+		case user.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				u.UpdateTime = value.Time
 			}
 		case user.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -159,6 +175,12 @@ func (u *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(u.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(u.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(u.Name)
 	builder.WriteString(", ")

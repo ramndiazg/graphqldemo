@@ -23,6 +23,34 @@ type ReviewCreate struct {
 	hooks    []Hook
 }
 
+// SetCreateTime sets the "create_time" field.
+func (rc *ReviewCreate) SetCreateTime(t time.Time) *ReviewCreate {
+	rc.mutation.SetCreateTime(t)
+	return rc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (rc *ReviewCreate) SetNillableCreateTime(t *time.Time) *ReviewCreate {
+	if t != nil {
+		rc.SetCreateTime(*t)
+	}
+	return rc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (rc *ReviewCreate) SetUpdateTime(t time.Time) *ReviewCreate {
+	rc.mutation.SetUpdateTime(t)
+	return rc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (rc *ReviewCreate) SetNillableUpdateTime(t *time.Time) *ReviewCreate {
+	if t != nil {
+		rc.SetUpdateTime(*t)
+	}
+	return rc
+}
+
 // SetRating sets the "rating" field.
 func (rc *ReviewCreate) SetRating(i int) *ReviewCreate {
 	rc.mutation.SetRating(i)
@@ -136,6 +164,14 @@ func (rc *ReviewCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (rc *ReviewCreate) defaults() {
+	if _, ok := rc.mutation.CreateTime(); !ok {
+		v := review.DefaultCreateTime()
+		rc.mutation.SetCreateTime(v)
+	}
+	if _, ok := rc.mutation.UpdateTime(); !ok {
+		v := review.DefaultUpdateTime()
+		rc.mutation.SetUpdateTime(v)
+	}
 	if _, ok := rc.mutation.CreatedAt(); !ok {
 		v := review.DefaultCreatedAt()
 		rc.mutation.SetCreatedAt(v)
@@ -148,6 +184,12 @@ func (rc *ReviewCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (rc *ReviewCreate) check() error {
+	if _, ok := rc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Review.create_time"`)}
+	}
+	if _, ok := rc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Review.update_time"`)}
+	}
 	if _, ok := rc.mutation.Rating(); !ok {
 		return &ValidationError{Name: "rating", err: errors.New(`ent: missing required field "Review.rating"`)}
 	}
@@ -191,6 +233,14 @@ func (rc *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 	if id, ok := rc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := rc.mutation.CreateTime(); ok {
+		_spec.SetField(review.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := rc.mutation.UpdateTime(); ok {
+		_spec.SetField(review.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
 	}
 	if value, ok := rc.mutation.Rating(); ok {
 		_spec.SetField(review.FieldRating, field.TypeInt, value)

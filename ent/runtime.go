@@ -16,8 +16,21 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	reviewMixin := schema.Review{}.Mixin()
+	reviewMixinFields0 := reviewMixin[0].Fields()
+	_ = reviewMixinFields0
 	reviewFields := schema.Review{}.Fields()
 	_ = reviewFields
+	// reviewDescCreateTime is the schema descriptor for create_time field.
+	reviewDescCreateTime := reviewMixinFields0[0].Descriptor()
+	// review.DefaultCreateTime holds the default value on creation for the create_time field.
+	review.DefaultCreateTime = reviewDescCreateTime.Default.(func() time.Time)
+	// reviewDescUpdateTime is the schema descriptor for update_time field.
+	reviewDescUpdateTime := reviewMixinFields0[1].Descriptor()
+	// review.DefaultUpdateTime holds the default value on creation for the update_time field.
+	review.DefaultUpdateTime = reviewDescUpdateTime.Default.(func() time.Time)
+	// review.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	review.UpdateDefaultUpdateTime = reviewDescUpdateTime.UpdateDefault.(func() time.Time)
 	// reviewDescCreatedAt is the schema descriptor for created_at field.
 	reviewDescCreatedAt := reviewFields[3].Descriptor()
 	// review.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -26,8 +39,21 @@ func init() {
 	reviewDescID := reviewFields[0].Descriptor()
 	// review.DefaultID holds the default value on creation for the id field.
 	review.DefaultID = reviewDescID.Default.(func() uuid.UUID)
+	toolMixin := schema.Tool{}.Mixin()
+	toolMixinFields0 := toolMixin[0].Fields()
+	_ = toolMixinFields0
 	toolFields := schema.Tool{}.Fields()
 	_ = toolFields
+	// toolDescCreateTime is the schema descriptor for create_time field.
+	toolDescCreateTime := toolMixinFields0[0].Descriptor()
+	// tool.DefaultCreateTime holds the default value on creation for the create_time field.
+	tool.DefaultCreateTime = toolDescCreateTime.Default.(func() time.Time)
+	// toolDescUpdateTime is the schema descriptor for update_time field.
+	toolDescUpdateTime := toolMixinFields0[1].Descriptor()
+	// tool.DefaultUpdateTime holds the default value on creation for the update_time field.
+	tool.DefaultUpdateTime = toolDescUpdateTime.Default.(func() time.Time)
+	// tool.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	tool.UpdateDefaultUpdateTime = toolDescUpdateTime.UpdateDefault.(func() time.Time)
 	// toolDescCreatedAt is the schema descriptor for created_at field.
 	toolDescCreatedAt := toolFields[6].Descriptor()
 	// tool.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -36,8 +62,21 @@ func init() {
 	toolDescID := toolFields[0].Descriptor()
 	// tool.DefaultID holds the default value on creation for the id field.
 	tool.DefaultID = toolDescID.Default.(func() uuid.UUID)
+	userMixin := schema.User{}.Mixin()
+	userMixinFields0 := userMixin[0].Fields()
+	_ = userMixinFields0
 	userFields := schema.User{}.Fields()
 	_ = userFields
+	// userDescCreateTime is the schema descriptor for create_time field.
+	userDescCreateTime := userMixinFields0[0].Descriptor()
+	// user.DefaultCreateTime holds the default value on creation for the create_time field.
+	user.DefaultCreateTime = userDescCreateTime.Default.(func() time.Time)
+	// userDescUpdateTime is the schema descriptor for update_time field.
+	userDescUpdateTime := userMixinFields0[1].Descriptor()
+	// user.DefaultUpdateTime holds the default value on creation for the update_time field.
+	user.DefaultUpdateTime = userDescUpdateTime.Default.(func() time.Time)
+	// user.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	user.UpdateDefaultUpdateTime = userDescUpdateTime.UpdateDefault.(func() time.Time)
 	// userDescCreatedAt is the schema descriptor for created_at field.
 	userDescCreatedAt := userFields[5].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
