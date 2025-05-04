@@ -23,8 +23,6 @@ const (
 	FieldRating = "rating"
 	// FieldComment holds the string denoting the comment field in the database.
 	FieldComment = "comment"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
 	// EdgeReviewer holds the string denoting the reviewer edge name in mutations.
 	EdgeReviewer = "reviewer"
 	// EdgeReviwedTool holds the string denoting the reviwedtool edge name in mutations.
@@ -54,7 +52,6 @@ var Columns = []string{
 	FieldUpdateTime,
 	FieldRating,
 	FieldComment,
-	FieldCreatedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "reviews"
@@ -86,8 +83,6 @@ var (
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -118,11 +113,6 @@ func ByRating(opts ...sql.OrderTermOption) OrderOption {
 // ByComment orders the results by the comment field.
 func ByComment(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldComment, opts...).ToFunc()
-}
-
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByReviewerField orders the results by reviewer field.

@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent"
@@ -23,7 +21,6 @@ func (Review) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.Int("rating"),
 		field.String("comment"),
-		field.Time("created_at").Default(time.Now),
 	}
 }
 

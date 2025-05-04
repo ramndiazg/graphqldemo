@@ -31,10 +31,6 @@ func init() {
 	review.DefaultUpdateTime = reviewDescUpdateTime.Default.(func() time.Time)
 	// review.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	review.UpdateDefaultUpdateTime = reviewDescUpdateTime.UpdateDefault.(func() time.Time)
-	// reviewDescCreatedAt is the schema descriptor for created_at field.
-	reviewDescCreatedAt := reviewFields[3].Descriptor()
-	// review.DefaultCreatedAt holds the default value on creation for the created_at field.
-	review.DefaultCreatedAt = reviewDescCreatedAt.Default.(func() time.Time)
 	// reviewDescID is the schema descriptor for id field.
 	reviewDescID := reviewFields[0].Descriptor()
 	// review.DefaultID holds the default value on creation for the id field.
@@ -54,10 +50,6 @@ func init() {
 	tool.DefaultUpdateTime = toolDescUpdateTime.Default.(func() time.Time)
 	// tool.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	tool.UpdateDefaultUpdateTime = toolDescUpdateTime.UpdateDefault.(func() time.Time)
-	// toolDescCreatedAt is the schema descriptor for created_at field.
-	toolDescCreatedAt := toolFields[6].Descriptor()
-	// tool.DefaultCreatedAt holds the default value on creation for the created_at field.
-	tool.DefaultCreatedAt = toolDescCreatedAt.Default.(func() time.Time)
 	// toolDescID is the schema descriptor for id field.
 	toolDescID := toolFields[0].Descriptor()
 	// tool.DefaultID holds the default value on creation for the id field.
@@ -77,10 +69,6 @@ func init() {
 	user.DefaultUpdateTime = userDescUpdateTime.Default.(func() time.Time)
 	// user.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	user.UpdateDefaultUpdateTime = userDescUpdateTime.UpdateDefault.(func() time.Time)
-	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[5].Descriptor()
-	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
-	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.

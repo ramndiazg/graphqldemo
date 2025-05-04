@@ -32,8 +32,6 @@ type Tool struct {
 	Website string `json:"website,omitempty"`
 	// ImageURL holds the value of the "image_url" field.
 	ImageURL string `json:"image_url,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ToolQuery when eager-loading is set.
 	Edges        ToolEdges `json:"edges"`
@@ -69,7 +67,7 @@ func (*Tool) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case tool.FieldName, tool.FieldDescription, tool.FieldCategory, tool.FieldWebsite, tool.FieldImageURL:
 			values[i] = new(sql.NullString)
-		case tool.FieldCreateTime, tool.FieldUpdateTime, tool.FieldCreatedAt:
+		case tool.FieldCreateTime, tool.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
 		case tool.FieldID:
 			values[i] = new(uuid.UUID)
@@ -136,12 +134,6 @@ func (t *Tool) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.ImageURL = value.String
 			}
-		case tool.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				t.CreatedAt = value.Time
-			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
 		}
@@ -203,9 +195,6 @@ func (t *Tool) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("image_url=")
 	builder.WriteString(t.ImageURL)
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

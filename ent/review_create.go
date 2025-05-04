@@ -63,20 +63,6 @@ func (rc *ReviewCreate) SetComment(s string) *ReviewCreate {
 	return rc
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (rc *ReviewCreate) SetCreatedAt(t time.Time) *ReviewCreate {
-	rc.mutation.SetCreatedAt(t)
-	return rc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (rc *ReviewCreate) SetNillableCreatedAt(t *time.Time) *ReviewCreate {
-	if t != nil {
-		rc.SetCreatedAt(*t)
-	}
-	return rc
-}
-
 // SetID sets the "id" field.
 func (rc *ReviewCreate) SetID(u uuid.UUID) *ReviewCreate {
 	rc.mutation.SetID(u)
@@ -172,10 +158,6 @@ func (rc *ReviewCreate) defaults() {
 		v := review.DefaultUpdateTime()
 		rc.mutation.SetUpdateTime(v)
 	}
-	if _, ok := rc.mutation.CreatedAt(); !ok {
-		v := review.DefaultCreatedAt()
-		rc.mutation.SetCreatedAt(v)
-	}
 	if _, ok := rc.mutation.ID(); !ok {
 		v := review.DefaultID()
 		rc.mutation.SetID(v)
@@ -195,9 +177,6 @@ func (rc *ReviewCreate) check() error {
 	}
 	if _, ok := rc.mutation.Comment(); !ok {
 		return &ValidationError{Name: "comment", err: errors.New(`ent: missing required field "Review.comment"`)}
-	}
-	if _, ok := rc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Review.created_at"`)}
 	}
 	return nil
 }
@@ -249,10 +228,6 @@ func (rc *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 	if value, ok := rc.mutation.Comment(); ok {
 		_spec.SetField(review.FieldComment, field.TypeString, value)
 		_node.Comment = value
-	}
-	if value, ok := rc.mutation.CreatedAt(); ok {
-		_spec.SetField(review.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
 	}
 	if nodes := rc.mutation.ReviewerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

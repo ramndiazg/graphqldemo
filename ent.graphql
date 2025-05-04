@@ -15,7 +15,6 @@ input CreateReviewInput {
   updateTime: Time
   rating: Int!
   comment: String!
-  createdAt: Time
   reviewerID: ID
   reviwedtoolID: ID
 }
@@ -37,7 +36,6 @@ input CreateToolInput {
   category: String!
   website: String!
   imageURL: String!
-  createdAt: Time
   reviewIDs: [ID!]
 }
 """
@@ -57,7 +55,6 @@ input CreateUserInput {
   username: String!
   email: String!
   passwordHash: String!
-  createdAt: Time
   reviewIDs: [ID!]
 }
 """
@@ -145,7 +142,6 @@ type Review implements Node {
   updateTime: Time!
   rating: Int!
   comment: String!
-  createdAt: Time!
   reviewer: User
   reviwedtool: Tool @goField(name: "ReviwedTool", forceResolver: false)
 }
@@ -188,7 +184,6 @@ type Tool implements Node {
   category: String!
   website: String!
   imageURL: String!
-  createdAt: Time!
   reviews: [Review!]
 }
 """
@@ -225,7 +220,6 @@ type User implements Node {
   username: String!
   email: String!
   passwordHash: String!
-  createdAt: Time!
   reviews: [Review!]
 }
 """

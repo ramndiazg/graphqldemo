@@ -72,20 +72,6 @@ func (ru *ReviewUpdate) SetNillableComment(s *string) *ReviewUpdate {
 	return ru
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (ru *ReviewUpdate) SetCreatedAt(t time.Time) *ReviewUpdate {
-	ru.mutation.SetCreatedAt(t)
-	return ru
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ru *ReviewUpdate) SetNillableCreatedAt(t *time.Time) *ReviewUpdate {
-	if t != nil {
-		ru.SetCreatedAt(*t)
-	}
-	return ru
-}
-
 // SetReviewerID sets the "reviewer" edge to the User entity by ID.
 func (ru *ReviewUpdate) SetReviewerID(id uuid.UUID) *ReviewUpdate {
 	ru.mutation.SetReviewerID(id)
@@ -197,9 +183,6 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := ru.mutation.Comment(); ok {
 		_spec.SetField(review.FieldComment, field.TypeString, value)
-	}
-	if value, ok := ru.mutation.CreatedAt(); ok {
-		_spec.SetField(review.FieldCreatedAt, field.TypeTime, value)
 	}
 	if ru.mutation.ReviewerCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -316,20 +299,6 @@ func (ruo *ReviewUpdateOne) SetComment(s string) *ReviewUpdateOne {
 func (ruo *ReviewUpdateOne) SetNillableComment(s *string) *ReviewUpdateOne {
 	if s != nil {
 		ruo.SetComment(*s)
-	}
-	return ruo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (ruo *ReviewUpdateOne) SetCreatedAt(t time.Time) *ReviewUpdateOne {
-	ruo.mutation.SetCreatedAt(t)
-	return ruo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ruo *ReviewUpdateOne) SetNillableCreatedAt(t *time.Time) *ReviewUpdateOne {
-	if t != nil {
-		ruo.SetCreatedAt(*t)
 	}
 	return ruo
 }
@@ -475,9 +444,6 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 	}
 	if value, ok := ruo.mutation.Comment(); ok {
 		_spec.SetField(review.FieldComment, field.TypeString, value)
-	}
-	if value, ok := ruo.mutation.CreatedAt(); ok {
-		_spec.SetField(review.FieldCreatedAt, field.TypeTime, value)
 	}
 	if ruo.mutation.ReviewerCleared() {
 		edge := &sqlgraph.EdgeSpec{

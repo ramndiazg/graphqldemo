@@ -43,7 +43,6 @@ type ReviewMutation struct {
 	rating             *int
 	addrating          *int
 	comment            *string
-	created_at         *time.Time
 	clearedFields      map[string]struct{}
 	reviewer           *uuid.UUID
 	clearedreviewer    bool
@@ -322,42 +321,6 @@ func (m *ReviewMutation) ResetComment() {
 	m.comment = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *ReviewMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *ReviewMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Review entity.
-// If the Review object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ReviewMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *ReviewMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
 // SetReviewerID sets the "reviewer" edge to the User entity by id.
 func (m *ReviewMutation) SetReviewerID(id uuid.UUID) {
 	m.reviewer = &id
@@ -470,7 +433,7 @@ func (m *ReviewMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ReviewMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 4)
 	if m.create_time != nil {
 		fields = append(fields, review.FieldCreateTime)
 	}
@@ -482,9 +445,6 @@ func (m *ReviewMutation) Fields() []string {
 	}
 	if m.comment != nil {
 		fields = append(fields, review.FieldComment)
-	}
-	if m.created_at != nil {
-		fields = append(fields, review.FieldCreatedAt)
 	}
 	return fields
 }
@@ -502,8 +462,6 @@ func (m *ReviewMutation) Field(name string) (ent.Value, bool) {
 		return m.Rating()
 	case review.FieldComment:
 		return m.Comment()
-	case review.FieldCreatedAt:
-		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -521,8 +479,6 @@ func (m *ReviewMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldRating(ctx)
 	case review.FieldComment:
 		return m.OldComment(ctx)
-	case review.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Review field %s", name)
 }
@@ -559,13 +515,6 @@ func (m *ReviewMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetComment(v)
-		return nil
-	case review.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Review field %s", name)
@@ -642,9 +591,6 @@ func (m *ReviewMutation) ResetField(name string) error {
 		return nil
 	case review.FieldComment:
 		m.ResetComment()
-		return nil
-	case review.FieldCreatedAt:
-		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Review field %s", name)
@@ -755,7 +701,6 @@ type ToolMutation struct {
 	category       *string
 	website        *string
 	image_url      *string
-	created_at     *time.Time
 	clearedFields  map[string]struct{}
 	reviews        map[uuid.UUID]struct{}
 	removedreviews map[uuid.UUID]struct{}
@@ -1121,42 +1066,6 @@ func (m *ToolMutation) ResetImageURL() {
 	m.image_url = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *ToolMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *ToolMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Tool entity.
-// If the Tool object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ToolMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *ToolMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
 // AddReviewIDs adds the "reviews" edge to the Review entity by ids.
 func (m *ToolMutation) AddReviewIDs(ids ...uuid.UUID) {
 	if m.reviews == nil {
@@ -1245,7 +1154,7 @@ func (m *ToolMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ToolMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m.create_time != nil {
 		fields = append(fields, tool.FieldCreateTime)
 	}
@@ -1266,9 +1175,6 @@ func (m *ToolMutation) Fields() []string {
 	}
 	if m.image_url != nil {
 		fields = append(fields, tool.FieldImageURL)
-	}
-	if m.created_at != nil {
-		fields = append(fields, tool.FieldCreatedAt)
 	}
 	return fields
 }
@@ -1292,8 +1198,6 @@ func (m *ToolMutation) Field(name string) (ent.Value, bool) {
 		return m.Website()
 	case tool.FieldImageURL:
 		return m.ImageURL()
-	case tool.FieldCreatedAt:
-		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -1317,8 +1221,6 @@ func (m *ToolMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldWebsite(ctx)
 	case tool.FieldImageURL:
 		return m.OldImageURL(ctx)
-	case tool.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Tool field %s", name)
 }
@@ -1376,13 +1278,6 @@ func (m *ToolMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetImageURL(v)
-		return nil
-	case tool.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Tool field %s", name)
@@ -1453,9 +1348,6 @@ func (m *ToolMutation) ResetField(name string) error {
 		return nil
 	case tool.FieldImageURL:
 		m.ResetImageURL()
-		return nil
-	case tool.FieldCreatedAt:
-		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Tool field %s", name)
@@ -1557,7 +1449,6 @@ type UserMutation struct {
 	username       *string
 	email          *string
 	password_hash  *string
-	created_at     *time.Time
 	clearedFields  map[string]struct{}
 	reviews        map[uuid.UUID]struct{}
 	removedreviews map[uuid.UUID]struct{}
@@ -1887,42 +1778,6 @@ func (m *UserMutation) ResetPasswordHash() {
 	m.password_hash = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *UserMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *UserMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *UserMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
 // AddReviewIDs adds the "reviews" edge to the Review entity by ids.
 func (m *UserMutation) AddReviewIDs(ids ...uuid.UUID) {
 	if m.reviews == nil {
@@ -2011,7 +1866,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 6)
 	if m.create_time != nil {
 		fields = append(fields, user.FieldCreateTime)
 	}
@@ -2029,9 +1884,6 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.password_hash != nil {
 		fields = append(fields, user.FieldPasswordHash)
-	}
-	if m.created_at != nil {
-		fields = append(fields, user.FieldCreatedAt)
 	}
 	return fields
 }
@@ -2053,8 +1905,6 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Email()
 	case user.FieldPasswordHash:
 		return m.PasswordHash()
-	case user.FieldCreatedAt:
-		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -2076,8 +1926,6 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldEmail(ctx)
 	case user.FieldPasswordHash:
 		return m.OldPasswordHash(ctx)
-	case user.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -2128,13 +1976,6 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPasswordHash(v)
-		return nil
-	case user.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -2202,9 +2043,6 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldPasswordHash:
 		m.ResetPasswordHash()
-		return nil
-	case user.FieldCreatedAt:
-		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

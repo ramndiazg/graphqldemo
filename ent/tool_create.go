@@ -80,20 +80,6 @@ func (tc *ToolCreate) SetImageURL(s string) *ToolCreate {
 	return tc
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (tc *ToolCreate) SetCreatedAt(t time.Time) *ToolCreate {
-	tc.mutation.SetCreatedAt(t)
-	return tc
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (tc *ToolCreate) SetNillableCreatedAt(t *time.Time) *ToolCreate {
-	if t != nil {
-		tc.SetCreatedAt(*t)
-	}
-	return tc
-}
-
 // SetID sets the "id" field.
 func (tc *ToolCreate) SetID(u uuid.UUID) *ToolCreate {
 	tc.mutation.SetID(u)
@@ -166,10 +152,6 @@ func (tc *ToolCreate) defaults() {
 		v := tool.DefaultUpdateTime()
 		tc.mutation.SetUpdateTime(v)
 	}
-	if _, ok := tc.mutation.CreatedAt(); !ok {
-		v := tool.DefaultCreatedAt()
-		tc.mutation.SetCreatedAt(v)
-	}
 	if _, ok := tc.mutation.ID(); !ok {
 		v := tool.DefaultID()
 		tc.mutation.SetID(v)
@@ -198,9 +180,6 @@ func (tc *ToolCreate) check() error {
 	}
 	if _, ok := tc.mutation.ImageURL(); !ok {
 		return &ValidationError{Name: "image_url", err: errors.New(`ent: missing required field "Tool.image_url"`)}
-	}
-	if _, ok := tc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Tool.created_at"`)}
 	}
 	return nil
 }
@@ -264,10 +243,6 @@ func (tc *ToolCreate) createSpec() (*Tool, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.ImageURL(); ok {
 		_spec.SetField(tool.FieldImageURL, field.TypeString, value)
 		_node.ImageURL = value
-	}
-	if value, ok := tc.mutation.CreatedAt(); ok {
-		_spec.SetField(tool.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
 	}
 	if nodes := tc.mutation.ReviewsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

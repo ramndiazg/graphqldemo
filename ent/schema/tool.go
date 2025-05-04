@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
@@ -26,7 +24,6 @@ func (Tool) Fields() []ent.Field {
 		field.String("category"),
 		field.String("website"),
 		field.String("image_url"),
-		field.Time("created_at").Default(time.Now),
 	}
 }
 

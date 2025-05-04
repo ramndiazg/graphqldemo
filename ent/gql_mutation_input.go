@@ -14,7 +14,6 @@ type CreateReviewInput struct {
 	UpdateTime    *time.Time
 	Rating        int
 	Comment       string
-	CreatedAt     *time.Time
 	ReviewerID    *uuid.UUID
 	ReviwedToolID *uuid.UUID
 }
@@ -29,9 +28,6 @@ func (i *CreateReviewInput) Mutate(m *ReviewMutation) {
 	}
 	m.SetRating(i.Rating)
 	m.SetComment(i.Comment)
-	if v := i.CreatedAt; v != nil {
-		m.SetCreatedAt(*v)
-	}
 	if v := i.ReviewerID; v != nil {
 		m.SetReviewerID(*v)
 	}
@@ -55,7 +51,6 @@ type CreateToolInput struct {
 	Category    string
 	Website     string
 	ImageURL    string
-	CreatedAt   *time.Time
 	ReviewIDs   []uuid.UUID
 }
 
@@ -72,9 +67,6 @@ func (i *CreateToolInput) Mutate(m *ToolMutation) {
 	m.SetCategory(i.Category)
 	m.SetWebsite(i.Website)
 	m.SetImageURL(i.ImageURL)
-	if v := i.CreatedAt; v != nil {
-		m.SetCreatedAt(*v)
-	}
 	if v := i.ReviewIDs; len(v) > 0 {
 		m.AddReviewIDs(v...)
 	}
@@ -94,7 +86,6 @@ type CreateUserInput struct {
 	Username     string
 	Email        string
 	PasswordHash string
-	CreatedAt    *time.Time
 	ReviewIDs    []uuid.UUID
 }
 
@@ -110,9 +101,6 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	m.SetUsername(i.Username)
 	m.SetEmail(i.Email)
 	m.SetPasswordHash(i.PasswordHash)
-	if v := i.CreatedAt; v != nil {
-		m.SetCreatedAt(*v)
-	}
 	if v := i.ReviewIDs; len(v) > 0 {
 		m.AddReviewIDs(v...)
 	}

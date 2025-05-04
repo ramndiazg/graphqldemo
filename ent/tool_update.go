@@ -106,20 +106,6 @@ func (tu *ToolUpdate) SetNillableImageURL(s *string) *ToolUpdate {
 	return tu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (tu *ToolUpdate) SetCreatedAt(t time.Time) *ToolUpdate {
-	tu.mutation.SetCreatedAt(t)
-	return tu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (tu *ToolUpdate) SetNillableCreatedAt(t *time.Time) *ToolUpdate {
-	if t != nil {
-		tu.SetCreatedAt(*t)
-	}
-	return tu
-}
-
 // AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
 func (tu *ToolUpdate) AddReviewIDs(ids ...uuid.UUID) *ToolUpdate {
 	tu.mutation.AddReviewIDs(ids...)
@@ -223,9 +209,6 @@ func (tu *ToolUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.ImageURL(); ok {
 		_spec.SetField(tool.FieldImageURL, field.TypeString, value)
-	}
-	if value, ok := tu.mutation.CreatedAt(); ok {
-		_spec.SetField(tool.FieldCreatedAt, field.TypeTime, value)
 	}
 	if tu.mutation.ReviewsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -368,20 +351,6 @@ func (tuo *ToolUpdateOne) SetNillableImageURL(s *string) *ToolUpdateOne {
 	return tuo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (tuo *ToolUpdateOne) SetCreatedAt(t time.Time) *ToolUpdateOne {
-	tuo.mutation.SetCreatedAt(t)
-	return tuo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (tuo *ToolUpdateOne) SetNillableCreatedAt(t *time.Time) *ToolUpdateOne {
-	if t != nil {
-		tuo.SetCreatedAt(*t)
-	}
-	return tuo
-}
-
 // AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
 func (tuo *ToolUpdateOne) AddReviewIDs(ids ...uuid.UUID) *ToolUpdateOne {
 	tuo.mutation.AddReviewIDs(ids...)
@@ -515,9 +484,6 @@ func (tuo *ToolUpdateOne) sqlSave(ctx context.Context) (_node *Tool, err error) 
 	}
 	if value, ok := tuo.mutation.ImageURL(); ok {
 		_spec.SetField(tool.FieldImageURL, field.TypeString, value)
-	}
-	if value, ok := tuo.mutation.CreatedAt(); ok {
-		_spec.SetField(tool.FieldCreatedAt, field.TypeTime, value)
 	}
 	if tuo.mutation.ReviewsCleared() {
 		edge := &sqlgraph.EdgeSpec{

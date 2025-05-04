@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
@@ -25,7 +23,6 @@ func (User) Fields() []ent.Field {
 		field.String("username").Unique(),
 		field.String("email").Unique(),
 		field.String("password_hash"),
-		field.Time("created_at").Default(time.Now),
 	}
 }
 

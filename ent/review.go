@@ -28,8 +28,6 @@ type Review struct {
 	Rating int `json:"rating,omitempty"`
 	// Comment holds the value of the "comment" field.
 	Comment string `json:"comment,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ReviewQuery when eager-loading is set.
 	Edges        ReviewEdges `json:"edges"`
@@ -82,7 +80,7 @@ func (*Review) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case review.FieldComment:
 			values[i] = new(sql.NullString)
-		case review.FieldCreateTime, review.FieldUpdateTime, review.FieldCreatedAt:
+		case review.FieldCreateTime, review.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
 		case review.FieldID:
 			values[i] = new(uuid.UUID)
@@ -134,12 +132,6 @@ func (r *Review) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field comment", values[i])
 			} else if value.Valid {
 				r.Comment = value.String
-			}
-		case review.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				r.CreatedAt = value.Time
 			}
 		case review.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -212,9 +204,6 @@ func (r *Review) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("comment=")
 	builder.WriteString(r.Comment)
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(r.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

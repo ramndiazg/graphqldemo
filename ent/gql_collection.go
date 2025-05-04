@@ -75,11 +75,6 @@ func (r *ReviewQuery) collectField(ctx context.Context, oneNode bool, opCtx *gra
 				selectedFields = append(selectedFields, review.FieldComment)
 				fieldSeen[review.FieldComment] = struct{}{}
 			}
-		case "createdAt":
-			if _, ok := fieldSeen[review.FieldCreatedAt]; !ok {
-				selectedFields = append(selectedFields, review.FieldCreatedAt)
-				fieldSeen[review.FieldCreatedAt] = struct{}{}
-			}
 		case "id":
 		case "__typename":
 		default:
@@ -209,11 +204,6 @@ func (t *ToolQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				selectedFields = append(selectedFields, tool.FieldImageURL)
 				fieldSeen[tool.FieldImageURL] = struct{}{}
 			}
-		case "createdAt":
-			if _, ok := fieldSeen[tool.FieldCreatedAt]; !ok {
-				selectedFields = append(selectedFields, tool.FieldCreatedAt)
-				fieldSeen[tool.FieldCreatedAt] = struct{}{}
-			}
 		case "id":
 		case "__typename":
 		default:
@@ -337,11 +327,6 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 			if _, ok := fieldSeen[user.FieldPasswordHash]; !ok {
 				selectedFields = append(selectedFields, user.FieldPasswordHash)
 				fieldSeen[user.FieldPasswordHash] = struct{}{}
-			}
-		case "createdAt":
-			if _, ok := fieldSeen[user.FieldCreatedAt]; !ok {
-				selectedFields = append(selectedFields, user.FieldCreatedAt)
-				fieldSeen[user.FieldCreatedAt] = struct{}{}
 			}
 		case "id":
 		case "__typename":
