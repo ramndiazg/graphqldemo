@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"graphQlDemo/ent/tool"
 	"time"
 
 	"github.com/google/uuid"
@@ -48,7 +49,7 @@ type CreateToolInput struct {
 	UpdateTime  *time.Time
 	Name        string
 	Description string
-	Category    string
+	Category    tool.Category
 	Website     string
 	ImageURL    string
 	ReviewIDs   []uuid.UUID

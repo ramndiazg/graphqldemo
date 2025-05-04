@@ -33,7 +33,7 @@ input CreateToolInput {
   updateTime: Time
   name: String!
   description: String!
-  category: String!
+  category: ToolCategory!
   website: String!
   imageURL: String!
   reviewIDs: [ID!]
@@ -181,10 +181,27 @@ type Tool implements Node {
   updateTime: Time!
   name: String!
   description: String!
-  category: String!
+  category: ToolCategory!
   website: String!
   imageURL: String!
   reviews: [Review!]
+}
+"""
+ToolCategory is enum for the field category
+"""
+enum ToolCategory @goModel(model: "graphQlDemo/ent/tool.Category") {
+  FRONTEND
+  BACKEND
+  FULLSTACK
+  MOBILE
+  DEVOPS
+  TESTING
+  DATABASE
+  CLOUD
+  SECURITY
+  MONITORING
+  VERSION_CONTROL
+  DOCUMENTATION
 }
 """
 Ordering options for Tool connections

@@ -65,15 +65,15 @@ func (tu *ToolUpdate) SetNillableDescription(s *string) *ToolUpdate {
 }
 
 // SetCategory sets the "category" field.
-func (tu *ToolUpdate) SetCategory(s string) *ToolUpdate {
-	tu.mutation.SetCategory(s)
+func (tu *ToolUpdate) SetCategory(t tool.Category) *ToolUpdate {
+	tu.mutation.SetCategory(t)
 	return tu
 }
 
 // SetNillableCategory sets the "category" field if the given value is not nil.
-func (tu *ToolUpdate) SetNillableCategory(s *string) *ToolUpdate {
-	if s != nil {
-		tu.SetCategory(*s)
+func (tu *ToolUpdate) SetNillableCategory(t *tool.Category) *ToolUpdate {
+	if t != nil {
+		tu.SetCategory(*t)
 	}
 	return tu
 }
@@ -183,7 +183,20 @@ func (tu *ToolUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tu *ToolUpdate) check() error {
+	if v, ok := tu.mutation.Category(); ok {
+		if err := tool.CategoryValidator(v); err != nil {
+			return &ValidationError{Name: "category", err: fmt.Errorf(`ent: validator failed for field "Tool.category": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (tu *ToolUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := tu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(tool.Table, tool.Columns, sqlgraph.NewFieldSpec(tool.FieldID, field.TypeUUID))
 	if ps := tu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -202,7 +215,7 @@ func (tu *ToolUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(tool.FieldDescription, field.TypeString, value)
 	}
 	if value, ok := tu.mutation.Category(); ok {
-		_spec.SetField(tool.FieldCategory, field.TypeString, value)
+		_spec.SetField(tool.FieldCategory, field.TypeEnum, value)
 	}
 	if value, ok := tu.mutation.Website(); ok {
 		_spec.SetField(tool.FieldWebsite, field.TypeString, value)
@@ -310,15 +323,15 @@ func (tuo *ToolUpdateOne) SetNillableDescription(s *string) *ToolUpdateOne {
 }
 
 // SetCategory sets the "category" field.
-func (tuo *ToolUpdateOne) SetCategory(s string) *ToolUpdateOne {
-	tuo.mutation.SetCategory(s)
+func (tuo *ToolUpdateOne) SetCategory(t tool.Category) *ToolUpdateOne {
+	tuo.mutation.SetCategory(t)
 	return tuo
 }
 
 // SetNillableCategory sets the "category" field if the given value is not nil.
-func (tuo *ToolUpdateOne) SetNillableCategory(s *string) *ToolUpdateOne {
-	if s != nil {
-		tuo.SetCategory(*s)
+func (tuo *ToolUpdateOne) SetNillableCategory(t *tool.Category) *ToolUpdateOne {
+	if t != nil {
+		tuo.SetCategory(*t)
 	}
 	return tuo
 }
@@ -441,7 +454,20 @@ func (tuo *ToolUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tuo *ToolUpdateOne) check() error {
+	if v, ok := tuo.mutation.Category(); ok {
+		if err := tool.CategoryValidator(v); err != nil {
+			return &ValidationError{Name: "category", err: fmt.Errorf(`ent: validator failed for field "Tool.category": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (tuo *ToolUpdateOne) sqlSave(ctx context.Context) (_node *Tool, err error) {
+	if err := tuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(tool.Table, tool.Columns, sqlgraph.NewFieldSpec(tool.FieldID, field.TypeUUID))
 	id, ok := tuo.mutation.ID()
 	if !ok {
@@ -477,7 +503,7 @@ func (tuo *ToolUpdateOne) sqlSave(ctx context.Context) (_node *Tool, err error) 
 		_spec.SetField(tool.FieldDescription, field.TypeString, value)
 	}
 	if value, ok := tuo.mutation.Category(); ok {
-		_spec.SetField(tool.FieldCategory, field.TypeString, value)
+		_spec.SetField(tool.FieldCategory, field.TypeEnum, value)
 	}
 	if value, ok := tuo.mutation.Website(); ok {
 		_spec.SetField(tool.FieldWebsite, field.TypeString, value)

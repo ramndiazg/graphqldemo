@@ -698,7 +698,7 @@ type ToolMutation struct {
 	update_time    *time.Time
 	name           *string
 	description    *string
-	category       *string
+	category       *tool.Category
 	website        *string
 	image_url      *string
 	clearedFields  map[string]struct{}
@@ -959,12 +959,12 @@ func (m *ToolMutation) ResetDescription() {
 }
 
 // SetCategory sets the "category" field.
-func (m *ToolMutation) SetCategory(s string) {
-	m.category = &s
+func (m *ToolMutation) SetCategory(t tool.Category) {
+	m.category = &t
 }
 
 // Category returns the value of the "category" field in the mutation.
-func (m *ToolMutation) Category() (r string, exists bool) {
+func (m *ToolMutation) Category() (r tool.Category, exists bool) {
 	v := m.category
 	if v == nil {
 		return
@@ -975,7 +975,7 @@ func (m *ToolMutation) Category() (r string, exists bool) {
 // OldCategory returns the old "category" field's value of the Tool entity.
 // If the Tool object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ToolMutation) OldCategory(ctx context.Context) (v string, err error) {
+func (m *ToolMutation) OldCategory(ctx context.Context) (v tool.Category, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCategory is only allowed on UpdateOne operations")
 	}
@@ -1259,7 +1259,7 @@ func (m *ToolMutation) SetField(name string, value ent.Value) error {
 		m.SetDescription(v)
 		return nil
 	case tool.FieldCategory:
-		v, ok := value.(string)
+		v, ok := value.(tool.Category)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

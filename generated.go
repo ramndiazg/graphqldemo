@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"graphQlDemo/ent"
+	"graphQlDemo/ent/tool"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -2249,9 +2250,9 @@ func (ec *executionContext) _Tool_category(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(tool.Category)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNToolCategory2graphQlDemoᚋentᚋtoolᚐCategory(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tool_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2261,7 +2262,7 @@ func (ec *executionContext) fieldContext_Tool_category(_ context.Context, field 
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type ToolCategory does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4838,7 +4839,7 @@ func (ec *executionContext) unmarshalInputCreateToolInput(ctx context.Context, o
 			it.Description = data
 		case "category":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNToolCategory2graphQlDemoᚋentᚋtoolᚐCategory(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6400,6 +6401,16 @@ func (ec *executionContext) marshalNTool2ᚖgraphQlDemoᚋentᚐTool(ctx context
 		return graphql.Null
 	}
 	return ec._Tool(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNToolCategory2graphQlDemoᚋentᚋtoolᚐCategory(ctx context.Context, v any) (tool.Category, error) {
+	var res tool.Category
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNToolCategory2graphQlDemoᚋentᚋtoolᚐCategory(ctx context.Context, sel ast.SelectionSet, v tool.Category) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNToolOrderField2ᚖgraphQlDemoᚋentᚐToolOrderField(ctx context.Context, v any) (*ent.ToolOrderField, error) {

@@ -63,8 +63,8 @@ func (tc *ToolCreate) SetDescription(s string) *ToolCreate {
 }
 
 // SetCategory sets the "category" field.
-func (tc *ToolCreate) SetCategory(s string) *ToolCreate {
-	tc.mutation.SetCategory(s)
+func (tc *ToolCreate) SetCategory(t tool.Category) *ToolCreate {
+	tc.mutation.SetCategory(t)
 	return tc
 }
 
@@ -175,6 +175,11 @@ func (tc *ToolCreate) check() error {
 	if _, ok := tc.mutation.Category(); !ok {
 		return &ValidationError{Name: "category", err: errors.New(`ent: missing required field "Tool.category"`)}
 	}
+	if v, ok := tc.mutation.Category(); ok {
+		if err := tool.CategoryValidator(v); err != nil {
+			return &ValidationError{Name: "category", err: fmt.Errorf(`ent: validator failed for field "Tool.category": %w`, err)}
+		}
+	}
 	if _, ok := tc.mutation.Website(); !ok {
 		return &ValidationError{Name: "website", err: errors.New(`ent: missing required field "Tool.website"`)}
 	}
@@ -233,7 +238,7 @@ func (tc *ToolCreate) createSpec() (*Tool, *sqlgraph.CreateSpec) {
 		_node.Description = value
 	}
 	if value, ok := tc.mutation.Category(); ok {
-		_spec.SetField(tool.FieldCategory, field.TypeString, value)
+		_spec.SetField(tool.FieldCategory, field.TypeEnum, value)
 		_node.Category = value
 	}
 	if value, ok := tc.mutation.Website(); ok {

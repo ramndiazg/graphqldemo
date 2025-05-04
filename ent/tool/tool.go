@@ -3,6 +3,9 @@
 package tool
 
 import (
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -75,6 +78,39 @@ var (
 	DefaultID func() uuid.UUID
 )
 
+// Category defines the type for the "category" enum field.
+type Category string
+
+// Category values.
+const (
+	CategoryFRONTEND        Category = "FRONTEND"
+	CategoryBACKEND         Category = "BACKEND"
+	CategoryFULLSTACK       Category = "FULLSTACK"
+	CategoryMOBILE          Category = "MOBILE"
+	CategoryDEVOPS          Category = "DEVOPS"
+	CategoryTESTING         Category = "TESTING"
+	CategoryDATABASE        Category = "DATABASE"
+	CategoryCLOUD           Category = "CLOUD"
+	CategorySECURITY        Category = "SECURITY"
+	CategoryMONITORING      Category = "MONITORING"
+	CategoryVERSION_CONTROL Category = "VERSION_CONTROL"
+	CategoryDOCUMENTATION   Category = "DOCUMENTATION"
+)
+
+func (c Category) String() string {
+	return string(c)
+}
+
+// CategoryValidator is a validator for the "category" field enum values. It is called by the builders before save.
+func CategoryValidator(c Category) error {
+	switch c {
+	case CategoryFRONTEND, CategoryBACKEND, CategoryFULLSTACK, CategoryMOBILE, CategoryDEVOPS, CategoryTESTING, CategoryDATABASE, CategoryCLOUD, CategorySECURITY, CategoryMONITORING, CategoryVERSION_CONTROL, CategoryDOCUMENTATION:
+		return nil
+	default:
+		return fmt.Errorf("tool: invalid enum value for category field: %q", c)
+	}
+}
+
 // OrderOption defines the ordering options for the Tool queries.
 type OrderOption func(*sql.Selector)
 
@@ -137,4 +173,22 @@ func newReviewsStep() *sqlgraph.Step {
 		sqlgraph.To(ReviewsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ReviewsTable, ReviewsColumn),
 	)
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e Category) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *Category) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = Category(str)
+	if err := CategoryValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid Category", str)
+	}
+	return nil
 }

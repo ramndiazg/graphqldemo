@@ -6,16 +6,21 @@ package graphQlDemo
 
 import (
 	"context"
+	"fmt"
 	"graphQlDemo/ent"
 )
 
 // Createreview is the resolver for the createreview field.
 func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateReviewInput) (*ent.Review, error) {
+	if input.ReviewerID == nil || input.ReviwedToolID == nil {
+		return nil, fmt.Errorf("reviewerID and reviwedtoolID are required")
+	}
+
 	return r.client.Review.Create().
 		SetRating(input.Rating).
 		SetComment(input.Comment).
-		SetNillableReviewerID(input.ReviewerID).
-		SetNillableReviwedToolID(input.ReviwedToolID).
+		SetReviewerID(*input.ReviewerID).
+		SetReviwedToolID(*input.ReviwedToolID).
 		Save(ctx)
 }
 

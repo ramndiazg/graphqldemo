@@ -45,7 +45,7 @@ var (
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "description", Type: field.TypeString},
-		{Name: "category", Type: field.TypeString},
+		{Name: "category", Type: field.TypeEnum, Enums: []string{"FRONTEND", "BACKEND", "FULLSTACK", "MOBILE", "DEVOPS", "TESTING", "DATABASE", "CLOUD", "SECURITY", "MONITORING", "VERSION_CONTROL", "DOCUMENTATION"}},
 		{Name: "website", Type: field.TypeString},
 		{Name: "image_url", Type: field.TypeString},
 	}

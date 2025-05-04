@@ -27,7 +27,7 @@ type Tool struct {
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// Category holds the value of the "category" field.
-	Category string `json:"category,omitempty"`
+	Category tool.Category `json:"category,omitempty"`
 	// Website holds the value of the "website" field.
 	Website string `json:"website,omitempty"`
 	// ImageURL holds the value of the "image_url" field.
@@ -120,7 +120,7 @@ func (t *Tool) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field category", values[i])
 			} else if value.Valid {
-				t.Category = value.String
+				t.Category = tool.Category(value.String)
 			}
 		case tool.FieldWebsite:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -188,7 +188,7 @@ func (t *Tool) String() string {
 	builder.WriteString(t.Description)
 	builder.WriteString(", ")
 	builder.WriteString("category=")
-	builder.WriteString(t.Category)
+	builder.WriteString(fmt.Sprintf("%v", t.Category))
 	builder.WriteString(", ")
 	builder.WriteString("website=")
 	builder.WriteString(t.Website)
