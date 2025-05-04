@@ -8,16 +8,30 @@ import (
 	"context"
 	"fmt"
 	"graphQlDemo/ent"
+
+	"github.com/google/uuid"
 )
 
 // Node is the resolver for the node field.
 func (r *queryResolver) Node(ctx context.Context, id string) (ent.Noder, error) {
-	panic(fmt.Errorf("not implemented: Node - node"))
+	uuidID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid ID")
+	}
+	return r.client.Noder(ctx, uuidID)
 }
 
 // Nodes is the resolver for the nodes field.
 func (r *queryResolver) Nodes(ctx context.Context, ids []string) ([]ent.Noder, error) {
-	panic(fmt.Errorf("not implemented: Nodes - nodes"))
+	uuidIDs := make([]uuid.UUID, len(ids))
+	for i, id := range ids {
+		uuidID, err := uuid.Parse(id)
+		if err != nil {
+			return nil, fmt.Errorf("invalid ID")
+		}
+		uuidIDs[i] = uuidID
+	}
+	return r.client.Noders(ctx, uuidIDs)
 }
 
 // Reviews is the resolver for the reviews field.
@@ -37,37 +51,71 @@ func (r *queryResolver) Users(ctx context.Context) ([]*ent.User, error) {
 
 // ID is the resolver for the id field.
 func (r *reviewResolver) ID(ctx context.Context, obj *ent.Review) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
+	return obj.ID.String(), nil
 }
 
 // ID is the resolver for the id field.
 func (r *toolResolver) ID(ctx context.Context, obj *ent.Tool) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
+	return obj.ID.String(), nil
 }
 
 // ID is the resolver for the id field.
 func (r *userResolver) ID(ctx context.Context, obj *ent.User) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
+	return obj.ID.String(), nil
 }
 
 // ReviewerID is the resolver for the reviewerID field.
 func (r *createReviewInputResolver) ReviewerID(ctx context.Context, obj *ent.CreateReviewInput, data *string) error {
-	panic(fmt.Errorf("not implemented: ReviewerID - reviewerID"))
+	if data == nil {
+		return nil
+	}
+	uuidValue, err := uuid.Parse(*data)
+	if err != nil {
+		return err
+	}
+	obj.ReviewerID = &uuidValue
+	return nil
 }
 
 // ReviwedtoolID is the resolver for the reviwedtoolID field.
 func (r *createReviewInputResolver) ReviwedtoolID(ctx context.Context, obj *ent.CreateReviewInput, data *string) error {
-	panic(fmt.Errorf("not implemented: ReviwedtoolID - reviwedtoolID"))
+	if data == nil {
+		return nil
+	}
+	uuidValue, err := uuid.Parse(*data)
+	if err != nil {
+		return err
+	}
+	obj.ReviwedToolID = &uuidValue
+	return nil
 }
 
 // ReviewIDs is the resolver for the reviewIDs field.
 func (r *createToolInputResolver) ReviewIDs(ctx context.Context, obj *ent.CreateToolInput, data []string) error {
-	panic(fmt.Errorf("not implemented: ReviewIDs - reviewIDs"))
+	uuids := make([]uuid.UUID, len(data))
+	for i, id := range data {
+		uuidValue, err := uuid.Parse(id)
+		if err != nil {
+			return err
+		}
+		uuids[i] = uuidValue
+	}
+	obj.ReviewIDs = uuids
+	return nil
 }
 
 // ReviewIDs is the resolver for the reviewIDs field.
 func (r *createUserInputResolver) ReviewIDs(ctx context.Context, obj *ent.CreateUserInput, data []string) error {
-	panic(fmt.Errorf("not implemented: ReviewIDs - reviewIDs"))
+	uuids := make([]uuid.UUID, len(data))
+	for i, id := range data {
+		uuidValue, err := uuid.Parse(id)
+		if err != nil {
+			return err
+		}
+		uuids[i] = uuidValue
+	}
+	obj.ReviewIDs = uuids
+	return nil
 }
 
 // Query returns QueryResolver implementation.

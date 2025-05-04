@@ -6,23 +6,38 @@ package graphQlDemo
 
 import (
 	"context"
-	"fmt"
 	"graphQlDemo/ent"
 )
 
 // Createreview is the resolver for the createreview field.
 func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateReviewInput) (*ent.Review, error) {
-	panic(fmt.Errorf("not implemented: Createreview - createreview"))
+	return r.client.Review.Create().
+		SetRating(input.Rating).
+		SetComment(input.Comment).
+		SetNillableReviewerID(input.ReviewerID).
+		SetNillableReviwedToolID(input.ReviwedToolID).
+		Save(ctx)
 }
 
 // Createuser is the resolver for the createuser field.
 func (r *mutationResolver) Createuser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented: Createuser - createuser"))
+	return r.client.User.Create().
+		SetName(input.Name).
+		SetUsername(input.Username).
+		SetEmail(input.Email).
+		SetPasswordHash(input.PasswordHash).
+		Save(ctx)
 }
 
 // Createtool is the resolver for the createtool field.
 func (r *mutationResolver) Createtool(ctx context.Context, input ent.CreateToolInput) (*ent.Tool, error) {
-	panic(fmt.Errorf("not implemented: Createtool - createtool"))
+	return r.client.Tool.Create().
+		SetName(input.Name).
+		SetDescription(input.Description).
+		SetCategory(input.Category).
+		SetWebsite(input.Website).
+		SetImageURL(input.ImageURL).
+		Save(ctx)
 }
 
 // Mutation returns MutationResolver implementation.
