@@ -11,12 +11,12 @@ import (
 )
 
 // Node is the resolver for the node field.
-func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
+func (r *queryResolver) Node(ctx context.Context, id string) (ent.Noder, error) {
 	panic(fmt.Errorf("not implemented: Node - node"))
 }
 
 // Nodes is the resolver for the nodes field.
-func (r *queryResolver) Nodes(ctx context.Context, ids []int) ([]ent.Noder, error) {
+func (r *queryResolver) Nodes(ctx context.Context, ids []string) ([]ent.Noder, error) {
 	panic(fmt.Errorf("not implemented: Nodes - nodes"))
 }
 
@@ -36,37 +36,37 @@ func (r *queryResolver) Users(ctx context.Context) ([]*ent.User, error) {
 }
 
 // ID is the resolver for the id field.
-func (r *reviewResolver) ID(ctx context.Context, obj *ent.Review) (int, error) {
+func (r *reviewResolver) ID(ctx context.Context, obj *ent.Review) (string, error) {
 	panic(fmt.Errorf("not implemented: ID - id"))
 }
 
 // ID is the resolver for the id field.
-func (r *toolResolver) ID(ctx context.Context, obj *ent.Tool) (int, error) {
+func (r *toolResolver) ID(ctx context.Context, obj *ent.Tool) (string, error) {
 	panic(fmt.Errorf("not implemented: ID - id"))
 }
 
 // ID is the resolver for the id field.
-func (r *userResolver) ID(ctx context.Context, obj *ent.User) (int, error) {
+func (r *userResolver) ID(ctx context.Context, obj *ent.User) (string, error) {
 	panic(fmt.Errorf("not implemented: ID - id"))
 }
 
 // ReviewerID is the resolver for the reviewerID field.
-func (r *createReviewInputResolver) ReviewerID(ctx context.Context, obj *ent.CreateReviewInput, data *int) error {
+func (r *createReviewInputResolver) ReviewerID(ctx context.Context, obj *ent.CreateReviewInput, data *string) error {
 	panic(fmt.Errorf("not implemented: ReviewerID - reviewerID"))
 }
 
 // ReviwedtoolID is the resolver for the reviwedtoolID field.
-func (r *createReviewInputResolver) ReviwedtoolID(ctx context.Context, obj *ent.CreateReviewInput, data *int) error {
+func (r *createReviewInputResolver) ReviwedtoolID(ctx context.Context, obj *ent.CreateReviewInput, data *string) error {
 	panic(fmt.Errorf("not implemented: ReviwedtoolID - reviwedtoolID"))
 }
 
 // ReviewIDs is the resolver for the reviewIDs field.
-func (r *createToolInputResolver) ReviewIDs(ctx context.Context, obj *ent.CreateToolInput, data []int) error {
+func (r *createToolInputResolver) ReviewIDs(ctx context.Context, obj *ent.CreateToolInput, data []string) error {
 	panic(fmt.Errorf("not implemented: ReviewIDs - reviewIDs"))
 }
 
 // ReviewIDs is the resolver for the reviewIDs field.
-func (r *createUserInputResolver) ReviewIDs(ctx context.Context, obj *ent.CreateUserInput, data []int) error {
+func (r *createUserInputResolver) ReviewIDs(ctx context.Context, obj *ent.CreateUserInput, data []string) error {
 	panic(fmt.Errorf("not implemented: ReviewIDs - reviewIDs"))
 }
 

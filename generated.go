@@ -70,8 +70,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Node    func(childComplexity int, id int) int
-		Nodes   func(childComplexity int, ids []int) int
+		Node    func(childComplexity int, id string) int
+		Nodes   func(childComplexity int, ids []string) int
 		Reviews func(childComplexity int) int
 		Tools   func(childComplexity int) int
 		Users   func(childComplexity int) int
@@ -117,31 +117,31 @@ type MutationResolver interface {
 	Createtool(ctx context.Context, input ent.CreateToolInput) (*ent.Tool, error)
 }
 type QueryResolver interface {
-	Node(ctx context.Context, id int) (ent.Noder, error)
-	Nodes(ctx context.Context, ids []int) ([]ent.Noder, error)
+	Node(ctx context.Context, id string) (ent.Noder, error)
+	Nodes(ctx context.Context, ids []string) ([]ent.Noder, error)
 	Reviews(ctx context.Context) ([]*ent.Review, error)
 	Tools(ctx context.Context) ([]*ent.Tool, error)
 	Users(ctx context.Context) ([]*ent.User, error)
 }
 type ReviewResolver interface {
-	ID(ctx context.Context, obj *ent.Review) (int, error)
+	ID(ctx context.Context, obj *ent.Review) (string, error)
 }
 type ToolResolver interface {
-	ID(ctx context.Context, obj *ent.Tool) (int, error)
+	ID(ctx context.Context, obj *ent.Tool) (string, error)
 }
 type UserResolver interface {
-	ID(ctx context.Context, obj *ent.User) (int, error)
+	ID(ctx context.Context, obj *ent.User) (string, error)
 }
 
 type CreateReviewInputResolver interface {
-	ReviewerID(ctx context.Context, obj *ent.CreateReviewInput, data *int) error
-	ReviwedtoolID(ctx context.Context, obj *ent.CreateReviewInput, data *int) error
+	ReviewerID(ctx context.Context, obj *ent.CreateReviewInput, data *string) error
+	ReviwedtoolID(ctx context.Context, obj *ent.CreateReviewInput, data *string) error
 }
 type CreateToolInputResolver interface {
-	ReviewIDs(ctx context.Context, obj *ent.CreateToolInput, data []int) error
+	ReviewIDs(ctx context.Context, obj *ent.CreateToolInput, data []string) error
 }
 type CreateUserInputResolver interface {
-	ReviewIDs(ctx context.Context, obj *ent.CreateUserInput, data []int) error
+	ReviewIDs(ctx context.Context, obj *ent.CreateUserInput, data []string) error
 }
 
 type executableSchema struct {
@@ -237,7 +237,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Node(childComplexity, args["id"].(int)), true
+		return e.complexity.Query.Node(childComplexity, args["id"].(string)), true
 
 	case "Query.nodes":
 		if e.complexity.Query.Nodes == nil {
@@ -249,7 +249,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Nodes(childComplexity, args["ids"].([]int)), true
+		return e.complexity.Query.Nodes(childComplexity, args["ids"].([]string)), true
 
 	case "Query.reviews":
 		if e.complexity.Query.Reviews == nil {
@@ -696,18 +696,18 @@ func (ec *executionContext) field_Query_node_args(ctx context.Context, rawArgs m
 func (ec *executionContext) field_Query_node_argsID(
 	ctx context.Context,
 	rawArgs map[string]any,
-) (int, error) {
+) (string, error) {
 	if _, ok := rawArgs["id"]; !ok {
-		var zeroVal int
+		var zeroVal string
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2int(ctx, tmp)
+		return ec.unmarshalNID2string(ctx, tmp)
 	}
 
-	var zeroVal int
+	var zeroVal string
 	return zeroVal, nil
 }
 
@@ -724,18 +724,18 @@ func (ec *executionContext) field_Query_nodes_args(ctx context.Context, rawArgs 
 func (ec *executionContext) field_Query_nodes_argsIds(
 	ctx context.Context,
 	rawArgs map[string]any,
-) ([]int, error) {
+) ([]string, error) {
 	if _, ok := rawArgs["ids"]; !ok {
-		var zeroVal []int
+		var zeroVal []string
 		return zeroVal, nil
 	}
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
 	if tmp, ok := rawArgs["ids"]; ok {
-		return ec.unmarshalNID2ᚕintᚄ(ctx, tmp)
+		return ec.unmarshalNID2ᚕstringᚄ(ctx, tmp)
 	}
 
-	var zeroVal []int
+	var zeroVal []string
 	return zeroVal, nil
 }
 
@@ -1253,7 +1253,7 @@ func (ec *executionContext) _Query_node(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Node(rctx, fc.Args["id"].(int))
+		return ec.resolvers.Query().Node(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1305,7 +1305,7 @@ func (ec *executionContext) _Query_nodes(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Nodes(rctx, fc.Args["ids"].([]int))
+		return ec.resolvers.Query().Nodes(rctx, fc.Args["ids"].([]string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1689,9 +1689,9 @@ func (ec *executionContext) _Review_id(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNID2int(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Review_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2029,9 +2029,9 @@ func (ec *executionContext) _Tool_id(ctx context.Context, field graphql.Collecte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNID2int(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tool_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2438,9 +2438,9 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNID2int(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4772,7 +4772,7 @@ func (ec *executionContext) unmarshalInputCreateReviewInput(ctx context.Context,
 			it.Comment = data
 		case "reviewerID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewerID"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4781,7 +4781,7 @@ func (ec *executionContext) unmarshalInputCreateReviewInput(ctx context.Context,
 			}
 		case "reviwedtoolID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviwedtoolID"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4859,7 +4859,7 @@ func (ec *executionContext) unmarshalInputCreateToolInput(ctx context.Context, o
 			it.ImageURL = data
 		case "reviewIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			data, err := ec.unmarshalOID2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4930,7 +4930,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 			it.PasswordHash = data
 		case "reviewIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			data, err := ec.unmarshalOID2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6140,13 +6140,13 @@ func (ec *executionContext) unmarshalNCreateUserInput2graphQlDemoᚋentᚐCreate
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNID2int(ctx context.Context, v any) (int, error) {
-	res, err := graphql.UnmarshalIntID(v)
+func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
+	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNID2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalIntID(v)
+func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6155,14 +6155,14 @@ func (ec *executionContext) marshalNID2int(ctx context.Context, sel ast.Selectio
 	return res
 }
 
-func (ec *executionContext) unmarshalNID2ᚕintᚄ(ctx context.Context, v any) ([]int, error) {
+func (ec *executionContext) unmarshalNID2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]int, len(vSlice))
+	res := make([]string, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNID2int(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -6170,10 +6170,10 @@ func (ec *executionContext) unmarshalNID2ᚕintᚄ(ctx context.Context, v any) (
 	return res, nil
 }
 
-func (ec *executionContext) marshalNID2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+func (ec *executionContext) marshalNID2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	for i := range v {
-		ret[i] = ec.marshalNID2int(ctx, sel, v[i])
+		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
 	}
 
 	for _, e := range ret {
@@ -6781,17 +6781,17 @@ func (ec *executionContext) marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCu
 	return v
 }
 
-func (ec *executionContext) unmarshalOID2ᚕintᚄ(ctx context.Context, v any) ([]int, error) {
+func (ec *executionContext) unmarshalOID2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]int, len(vSlice))
+	res := make([]string, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNID2int(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -6799,13 +6799,13 @@ func (ec *executionContext) unmarshalOID2ᚕintᚄ(ctx context.Context, v any) (
 	return res, nil
 }
 
-func (ec *executionContext) marshalOID2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+func (ec *executionContext) marshalOID2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := make(graphql.Array, len(v))
 	for i := range v {
-		ret[i] = ec.marshalNID2int(ctx, sel, v[i])
+		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
 	}
 
 	for _, e := range ret {
@@ -6817,19 +6817,19 @@ func (ec *executionContext) marshalOID2ᚕintᚄ(ctx context.Context, sel ast.Se
 	return ret
 }
 
-func (ec *executionContext) unmarshalOID2ᚖint(ctx context.Context, v any) (*int, error) {
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v any) (*string, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := graphql.UnmarshalIntID(v)
+	res, err := graphql.UnmarshalID(v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOID2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	res := graphql.MarshalIntID(*v)
+	res := graphql.MarshalID(*v)
 	return res
 }
 
