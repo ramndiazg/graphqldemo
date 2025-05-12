@@ -92,6 +92,20 @@ func (uu *UserUpdate) SetNillablePasswordHash(s *string) *UserUpdate {
 	return uu
 }
 
+// SetRole sets the "role" field.
+func (uu *UserUpdate) SetRole(u user.Role) *UserUpdate {
+	uu.mutation.SetRole(u)
+	return uu
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableRole(u *user.Role) *UserUpdate {
+	if u != nil {
+		uu.SetRole(*u)
+	}
+	return uu
+}
+
 // AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
 func (uu *UserUpdate) AddReviewIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddReviewIDs(ids...)
@@ -169,7 +183,20 @@ func (uu *UserUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (uu *UserUpdate) check() error {
+	if v, ok := uu.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := uu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID))
 	if ps := uu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -192,6 +219,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
 	if uu.mutation.ReviewsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -320,6 +350,20 @@ func (uuo *UserUpdateOne) SetNillablePasswordHash(s *string) *UserUpdateOne {
 	return uuo
 }
 
+// SetRole sets the "role" field.
+func (uuo *UserUpdateOne) SetRole(u user.Role) *UserUpdateOne {
+	uuo.mutation.SetRole(u)
+	return uuo
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableRole(u *user.Role) *UserUpdateOne {
+	if u != nil {
+		uuo.SetRole(*u)
+	}
+	return uuo
+}
+
 // AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
 func (uuo *UserUpdateOne) AddReviewIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddReviewIDs(ids...)
@@ -410,7 +454,20 @@ func (uuo *UserUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (uuo *UserUpdateOne) check() error {
+	if v, ok := uuo.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
+	if err := uuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID))
 	id, ok := uuo.mutation.ID()
 	if !ok {
@@ -450,6 +507,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
 	if uuo.mutation.ReviewsCleared() {
 		edge := &sqlgraph.EdgeSpec{

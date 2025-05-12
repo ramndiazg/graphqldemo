@@ -74,6 +74,20 @@ func (uc *UserCreate) SetPasswordHash(s string) *UserCreate {
 	return uc
 }
 
+// SetRole sets the "role" field.
+func (uc *UserCreate) SetRole(u user.Role) *UserCreate {
+	uc.mutation.SetRole(u)
+	return uc
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (uc *UserCreate) SetNillableRole(u *user.Role) *UserCreate {
+	if u != nil {
+		uc.SetRole(*u)
+	}
+	return uc
+}
+
 // SetID sets the "id" field.
 func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	uc.mutation.SetID(u)
@@ -146,6 +160,10 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultUpdateTime()
 		uc.mutation.SetUpdateTime(v)
 	}
+	if _, ok := uc.mutation.Role(); !ok {
+		v := user.DefaultRole
+		uc.mutation.SetRole(v)
+	}
 	if _, ok := uc.mutation.ID(); !ok {
 		v := user.DefaultID()
 		uc.mutation.SetID(v)
@@ -171,6 +189,14 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.PasswordHash(); !ok {
 		return &ValidationError{Name: "password_hash", err: errors.New(`ent: missing required field "User.password_hash"`)}
+	}
+	if _, ok := uc.mutation.Role(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "User.role"`)}
+	}
+	if v, ok := uc.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -230,6 +256,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
 		_node.PasswordHash = value
+	}
+	if value, ok := uc.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+		_node.Role = value
 	}
 	if nodes := uc.mutation.ReviewsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

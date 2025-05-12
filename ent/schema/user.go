@@ -23,6 +23,7 @@ func (User) Fields() []ent.Field {
 		field.String("username").Unique(),
 		field.String("email").Unique(),
 		field.String("password_hash"),
+		field.Enum("role").Values("user", "admin").Default("user"),
 	}
 }
 

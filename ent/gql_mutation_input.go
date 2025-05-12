@@ -4,6 +4,7 @@ package ent
 
 import (
 	"graphQlDemo/ent/tool"
+	"graphQlDemo/ent/user"
 	"time"
 
 	"github.com/google/uuid"
@@ -87,6 +88,7 @@ type CreateUserInput struct {
 	Username     string
 	Email        string
 	PasswordHash string
+	Role         *user.Role
 	ReviewIDs    []uuid.UUID
 }
 
@@ -102,6 +104,9 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	m.SetUsername(i.Username)
 	m.SetEmail(i.Email)
 	m.SetPasswordHash(i.PasswordHash)
+	if v := i.Role; v != nil {
+		m.SetRole(*v)
+	}
 	if v := i.ReviewIDs; len(v) > 0 {
 		m.AddReviewIDs(v...)
 	}

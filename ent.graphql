@@ -55,6 +55,7 @@ input CreateUserInput {
   username: String!
   email: String!
   passwordHash: String!
+  role: UserRole
   reviewIDs: [ID!]
 }
 """
@@ -237,6 +238,7 @@ type User implements Node {
   username: String!
   email: String!
   passwordHash: String!
+  role: UserRole!
   reviews: [Review!]
 }
 """
@@ -258,4 +260,11 @@ Properties by which User connections can be ordered.
 enum UserOrderField {
   CREATE_TIME
   UPDATE_TIME
+}
+"""
+UserRole is enum for the field role
+"""
+enum UserRole @goModel(model: "graphQlDemo/ent/user.Role") {
+  user
+  admin
 }

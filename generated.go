@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"graphQlDemo/ent"
 	"graphQlDemo/ent/tool"
+	"graphQlDemo/ent/user"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -107,6 +108,7 @@ type ComplexityRoot struct {
 		Name         func(childComplexity int) int
 		PasswordHash func(childComplexity int) int
 		Reviews      func(childComplexity int) int
+		Role         func(childComplexity int) int
 		UpdateTime   func(childComplexity int) int
 		Username     func(childComplexity int) int
 	}
@@ -426,6 +428,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.User.Reviews(childComplexity), true
+
+	case "User.role":
+		if e.complexity.User.Role == nil {
+			break
+		}
+
+		return e.complexity.User.Role(childComplexity), true
 
 	case "User.updateTime":
 		if e.complexity.User.UpdateTime == nil {
@@ -978,6 +987,8 @@ func (ec *executionContext) fieldContext_Mutation_createuser(ctx context.Context
 				return ec.fieldContext_User_email(ctx, field)
 			case "passwordHash":
 				return ec.fieldContext_User_passwordHash(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
 			case "reviews":
 				return ec.fieldContext_User_reviews(ctx, field)
 			}
@@ -1524,6 +1535,8 @@ func (ec *executionContext) fieldContext_Query_users(_ context.Context, field gr
 				return ec.fieldContext_User_email(ctx, field)
 			case "passwordHash":
 				return ec.fieldContext_User_passwordHash(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
 			case "reviews":
 				return ec.fieldContext_User_reviews(ctx, field)
 			}
@@ -1934,6 +1947,8 @@ func (ec *executionContext) fieldContext_Review_reviewer(_ context.Context, fiel
 				return ec.fieldContext_User_email(ctx, field)
 			case "passwordHash":
 				return ec.fieldContext_User_passwordHash(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
 			case "reviews":
 				return ec.fieldContext_User_reviews(ctx, field)
 			}
@@ -2716,6 +2731,50 @@ func (ec *executionContext) fieldContext_User_passwordHash(_ context.Context, fi
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_role(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_role(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Role, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(user.Role)
+	fc.Result = res
+	return ec.marshalNUserRole2graphQlDemoᚋentᚋuserᚐRole(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UserRole does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4880,7 +4939,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "username", "email", "passwordHash", "reviewIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "username", "email", "passwordHash", "role", "reviewIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4929,6 +4988,13 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.PasswordHash = data
+		case "role":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			data, err := ec.unmarshalOUserRole2ᚖgraphQlDemoᚋentᚋuserᚐRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Role = data
 		case "reviewIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewIDs"))
 			data, err := ec.unmarshalOID2ᚕstringᚄ(ctx, v)
@@ -5720,6 +5786,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "role":
+			out.Values[i] = ec._User_role(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "reviews":
 			field := field
 
@@ -6499,6 +6570,16 @@ func (ec *executionContext) marshalNUserOrderField2ᚖgraphQlDemoᚋentᚐUserOr
 	return v
 }
 
+func (ec *executionContext) unmarshalNUserRole2graphQlDemoᚋentᚋuserᚐRole(ctx context.Context, v any) (user.Role, error) {
+	var res user.Role
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUserRole2graphQlDemoᚋentᚋuserᚐRole(ctx context.Context, sel ast.SelectionSet, v user.Role) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -6985,6 +7066,22 @@ func (ec *executionContext) marshalOUser2ᚖgraphQlDemoᚋentᚐUser(ctx context
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUserRole2ᚖgraphQlDemoᚋentᚋuserᚐRole(ctx context.Context, v any) (*user.Role, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(user.Role)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUserRole2ᚖgraphQlDemoᚋentᚋuserᚐRole(ctx context.Context, sel ast.SelectionSet, v *user.Role) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
