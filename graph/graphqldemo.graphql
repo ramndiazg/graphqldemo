@@ -2,4 +2,6 @@ type Mutation {
     createreview(input: CreateReviewInput!): Review
     createuser(input: CreateUserInput!): User
     createtool(input: CreateToolInput!): Tool
+    login(username: String!, password: String!): String
+    register(username: String!, password: String!, email: String!): String
 }

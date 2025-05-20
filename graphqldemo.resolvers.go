@@ -7,7 +7,9 @@ package graphQlDemo
 import (
 	"context"
 	"fmt"
+	"graphQlDemo/auth"
 	"graphQlDemo/ent"
+	"graphQlDemo/ent/user"
 )
 
 // Createreview is the resolver for the createreview field.
@@ -26,11 +28,15 @@ func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateRev
 
 // Createuser is the resolver for the createuser field.
 func (r *mutationResolver) Createuser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
+	hashedPass, err := auth.HashPassword(input.PasswordHash)
+    if err != nil {
+        return nil, fmt.Errorf("error in create user")
+    }
 	return r.client.User.Create().
 		SetName(input.Name).
 		SetUsername(input.Username).
 		SetEmail(input.Email).
-		SetPasswordHash(input.PasswordHash).
+		SetPasswordHash(hashedPass).
 		Save(ctx)
 }
 
@@ -43,6 +49,32 @@ func (r *mutationResolver) Createtool(ctx context.Context, input ent.CreateToolI
 		SetWebsite(input.Website).
 		SetImageURL(input.ImageURL).
 		Save(ctx)
+}
+
+// Login is the resolver for the login field.
+func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*string, error) {
+	user, err := r.client.User.
+        Query().
+        Where(user.Username(username)).
+        Only(ctx)
+
+    if err != nil {
+        return nil, fmt.Errorf("password or user invalid")
+    }
+    if !auth.CheckPassword(password, user.PasswordHash) {
+        return nil, fmt.Errorf("password or user invalid")
+    }
+    token, err := auth.CreateToken(user.Username)
+	if err != nil {
+        return nil, fmt.Errorf("password or user invalid")
+    }
+
+	return &token, err
+}
+
+// Register is the resolver for the register field.
+func (r *mutationResolver) Register(ctx context.Context, username string, password string, email string) (*string, error) {
+	panic(fmt.Errorf("not implemented: Register - register"))
 }
 
 // Mutation returns MutationResolver implementation.
