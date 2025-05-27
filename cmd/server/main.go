@@ -8,6 +8,7 @@ import (
 	"graphQlDemo"
 	"graphQlDemo/ent"
 	"graphQlDemo/ent/migrate"
+	"graphQlDemo/auth"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -31,10 +32,14 @@ func main() {
 	}
 
 	srv := handler.NewDefaultServer(graphQlDemo.NewSchema(client))
+
+	authHandler := auth.Middleware(client, srv)
+
 	http.Handle("/",
 		playground.Handler("GraphQL Demo", "/query"),
 	)
-	http.Handle("/query", srv)
+	http.Handle("/query", authHandler)
+
 	log.Println("listening on :8081")
 	if err := http.ListenAndServe(":8081", nil); err != nil {
 		log.Fatal("http server terminated", err)
