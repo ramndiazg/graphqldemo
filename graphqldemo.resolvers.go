@@ -14,6 +14,11 @@ import (
 
 // Createreview is the resolver for the createreview field.
 func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateReviewInput) (*ent.Review, error) {
+	user, ok := ctx.Value("user").(*ent.User)
+	if !ok || user.Role != "user" {
+		return nil, fmt.Errorf("access denied")
+	}
+
 	if input.ReviewerID == nil || input.ReviwedToolID == nil {
 		return nil, fmt.Errorf("reviewerID and reviwedtoolID are required")
 	}
@@ -28,10 +33,15 @@ func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateRev
 
 // Createuser is the resolver for the createuser field.
 func (r *mutationResolver) Createuser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
+	user, ok := ctx.Value("user").(*ent.User)
+	if !ok || user.Role != "admin" {
+		return nil, fmt.Errorf("access denied")
+	}
+
 	hashedPass, err := auth.HashPassword(input.PasswordHash)
-    if err != nil {
-        return nil, fmt.Errorf("error in create user")
-    }
+	if err != nil {
+		return nil, fmt.Errorf("error in create user")
+	}
 	return r.client.User.Create().
 		SetName(input.Name).
 		SetUsername(input.Username).
@@ -42,6 +52,11 @@ func (r *mutationResolver) Createuser(ctx context.Context, input ent.CreateUserI
 
 // Createtool is the resolver for the createtool field.
 func (r *mutationResolver) Createtool(ctx context.Context, input ent.CreateToolInput) (*ent.Tool, error) {
+	user, ok := ctx.Value("user").(*ent.User)
+	if !ok || user.Role != "admin" {
+		return nil, fmt.Errorf("access denied")
+	}
+
 	return r.client.Tool.Create().
 		SetName(input.Name).
 		SetDescription(input.Description).
@@ -54,20 +69,20 @@ func (r *mutationResolver) Createtool(ctx context.Context, input ent.CreateToolI
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*string, error) {
 	user, err := r.client.User.
-        Query().
-        Where(user.Username(username)).
-        Only(ctx)
+		Query().
+		Where(user.Username(username)).
+		Only(ctx)
 
-    if err != nil {
-        return nil, fmt.Errorf("password or user invalid")
-    }
-    if !auth.CheckPassword(password, user.PasswordHash) {
-        return nil, fmt.Errorf("password or user invalid")
-    }
-    token, err := auth.CreateToken(user.Username)
 	if err != nil {
-        return nil, fmt.Errorf("password or user invalid")
-    }
+		return nil, fmt.Errorf("password or user invalid")
+	}
+	if !auth.CheckPassword(password, user.PasswordHash) {
+		return nil, fmt.Errorf("password or user invalid")
+	}
+	token, err := auth.CreateToken(user.Username)
+	if err != nil {
+		return nil, fmt.Errorf("password or user invalid")
+	}
 
 	return &token, err
 }

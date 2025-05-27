@@ -24,6 +24,8 @@ func main() {
 	if err != nil {
 		log.Fatal("opening ent client", err)
 	}
+	defer client.Close()
+
 	if err := client.Schema.Create(
 		context.Background(),
 		migrate.WithGlobalUniqueID(true),
@@ -32,16 +34,14 @@ func main() {
 	}
 
 	srv := handler.NewDefaultServer(graphQlDemo.NewSchema(client))
-
-	authHandler := auth.Middleware(client, srv)
-
-	http.Handle("/",
-		playground.Handler("GraphQL Demo", "/query"),
-	)
-	http.Handle("/query", authHandler)
-
-	log.Println("listening on :8081")
-	if err := http.ListenAndServe(":8081", nil); err != nil {
-		log.Fatal("http server terminated", err)
+	router := http.NewServeMux()
+	router.Handle("/", playground.Handler("GraphQL Playground", "/graphql"))
+	router.Handle("/graphql", auth.Middleware(client, srv))
+	server := &http.Server{
+		Addr:    ":8081",
+		Handler: router,
 	}
+
+	log.Println("server started on http://localhost:8081")
+	log.Fatal(server.ListenAndServe())
 }

@@ -1,10 +1,13 @@
 package auth
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"graphQlDemo/ent"
 	"graphQlDemo/ent/user"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -17,7 +20,7 @@ import (
 type contextKey string
 
 const (
-    userContextKey contextKey = "user"
+	userContextKey contextKey = "user"
 )
 
 var secretKey = []byte("my-super-secret-key")
@@ -62,43 +65,75 @@ func ValidateToken(tokenString string) (string, error) {
 }
 
 func UserFromContext(ctx context.Context) (*ent.User, bool) {
-    user, ok := ctx.Value(userContextKey).(*ent.User)
-    return user, ok
+	user, ok := ctx.Value(userContextKey).(*ent.User)
+	return user, ok
+}
+
+func isPublicOperation(opName, query string) bool {
+	publicOps := []string{"login", "register"}
+	opLower := strings.ToLower(opName)
+	queryLower := strings.ToLower(query)
+
+	for _, op := range publicOps {
+		if strings.Contains(opLower, op) || strings.Contains(queryLower, op) {
+			return true
+		}
+	}
+	return false
 }
 
 func Middleware(client *ent.Client, next *handler.Server) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
 
-		if r.URL.Path == "/" || strings.Contains(r.URL.Path, "login") || strings.Contains(r.URL.Path, "register") {
-			next.ServeHTTP(w, r)
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
 			return
+		}
+
+		if r.Body != nil {
+			bodyBytes, _ := io.ReadAll(r.Body)
+			r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+			var reqBody struct {
+				OperationName string `json:"operationName"`
+				Query         string `json:"query"`
+			}
+
+			if json.Unmarshal(bodyBytes, &reqBody) == nil {
+				if isPublicOperation(reqBody.OperationName, reqBody.Query) {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+			r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 		}
 
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			http.Error(w, "Authorization header required", http.StatusUnauthorized)
+			http.Error(w, `{"error": "Authorization header required"}`, http.StatusUnauthorized)
 			return
 		}
 
-		username, err := ValidateToken(strings.TrimPrefix(authHeader, "Bearer "))
+		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+		username, err := ValidateToken(tokenStr)
 		if err != nil {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			http.Error(w, `{"error": "Invalid token"}`, http.StatusUnauthorized)
 			return
 		}
 
 		user, err := client.User.
 			Query().
 			Where(user.Username(username)).
-			Only(ctx)
+			Only(r.Context())
 		if err != nil {
-			http.Error(w, "User not found", http.StatusUnauthorized)
+			http.Error(w, `{"error": "User not found"}`, http.StatusUnauthorized)
 			return
 		}
 
-		ctx = context.WithValue(ctx, userContextKey, user)
-		r = r.WithContext(ctx)
-
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), userContextKey, user)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
