@@ -89,7 +89,43 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, username string, password string, email string) (*string, error) {
-	panic(fmt.Errorf("not implemented: Register - register"))
+	//panic(fmt.Errorf("not implemented: Register - register"))
+	exists, err := r.client.User.
+		Query().
+		Where(user.Or(
+			user.Username(username),
+			user.Email(email),
+		)).
+		Exist(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error checking user existence")
+	}
+	if exists {
+		return nil, fmt.Errorf("username or email already in use")
+	}
+
+	hashedPass, err := auth.HashPassword(password)
+	if err != nil {
+		return nil, fmt.Errorf("error hashing password")
+	}
+
+	_, err = r.client.User.Create().
+		SetUsername(username).
+		SetEmail(email).
+		SetPasswordHash(hashedPass).
+		SetRole("user").
+		SetName(username).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error creating user")
+	}
+
+	token, err := auth.CreateToken(username)
+	if err != nil {
+		return nil, fmt.Errorf("error generating token")
+	}
+
+	return &token, nil
 }
 
 // Mutation returns MutationResolver implementation.
