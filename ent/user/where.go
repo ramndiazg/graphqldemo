@@ -86,6 +86,11 @@ func PasswordHash(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPasswordHash, v))
 }
 
+// IsVerified applies equality check predicate on the "is_verified" field. It's identical to IsVerifiedEQ.
+func IsVerified(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsVerified, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreateTime, v))
@@ -444,6 +449,16 @@ func RoleIn(vs ...Role) predicate.User {
 // RoleNotIn applies the NotIn predicate on the "role" field.
 func RoleNotIn(vs ...Role) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldRole, vs...))
+}
+
+// IsVerifiedEQ applies the EQ predicate on the "is_verified" field.
+func IsVerifiedEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsVerified, v))
+}
+
+// IsVerifiedNEQ applies the NEQ predicate on the "is_verified" field.
+func IsVerifiedNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldIsVerified, v))
 }
 
 // HasReviews applies the HasEdge predicate on the "reviews" edge.

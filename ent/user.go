@@ -32,6 +32,8 @@ type User struct {
 	PasswordHash string `json:"password_hash,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
+	// IsVerified holds the value of the "is_verified" field.
+	IsVerified bool `json:"is_verified,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -65,6 +67,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldIsVerified:
+			values[i] = new(sql.NullBool)
 		case user.FieldName, user.FieldUsername, user.FieldEmail, user.FieldPasswordHash, user.FieldRole:
 			values[i] = new(sql.NullString)
 		case user.FieldCreateTime, user.FieldUpdateTime:
@@ -134,6 +138,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Role = user.Role(value.String)
 			}
+		case user.FieldIsVerified:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_verified", values[i])
+			} else if value.Valid {
+				u.IsVerified = value.Bool
+			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
 		}
@@ -195,6 +205,9 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", u.Role))
+	builder.WriteString(", ")
+	builder.WriteString("is_verified=")
+	builder.WriteString(fmt.Sprintf("%v", u.IsVerified))
 	builder.WriteByte(')')
 	return builder.String()
 }

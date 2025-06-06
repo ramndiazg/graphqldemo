@@ -89,6 +89,7 @@ type CreateUserInput struct {
 	Email        string
 	PasswordHash string
 	Role         *user.Role
+	IsVerified   *bool
 	ReviewIDs    []uuid.UUID
 }
 
@@ -106,6 +107,9 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	m.SetPasswordHash(i.PasswordHash)
 	if v := i.Role; v != nil {
 		m.SetRole(*v)
+	}
+	if v := i.IsVerified; v != nil {
+		m.SetIsVerified(*v)
 	}
 	if v := i.ReviewIDs; len(v) > 0 {
 		m.AddReviewIDs(v...)

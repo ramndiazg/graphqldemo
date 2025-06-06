@@ -88,6 +88,20 @@ func (uc *UserCreate) SetNillableRole(u *user.Role) *UserCreate {
 	return uc
 }
 
+// SetIsVerified sets the "is_verified" field.
+func (uc *UserCreate) SetIsVerified(b bool) *UserCreate {
+	uc.mutation.SetIsVerified(b)
+	return uc
+}
+
+// SetNillableIsVerified sets the "is_verified" field if the given value is not nil.
+func (uc *UserCreate) SetNillableIsVerified(b *bool) *UserCreate {
+	if b != nil {
+		uc.SetIsVerified(*b)
+	}
+	return uc
+}
+
 // SetID sets the "id" field.
 func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	uc.mutation.SetID(u)
@@ -164,6 +178,10 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultRole
 		uc.mutation.SetRole(v)
 	}
+	if _, ok := uc.mutation.IsVerified(); !ok {
+		v := user.DefaultIsVerified
+		uc.mutation.SetIsVerified(v)
+	}
 	if _, ok := uc.mutation.ID(); !ok {
 		v := user.DefaultID()
 		uc.mutation.SetID(v)
@@ -197,6 +215,9 @@ func (uc *UserCreate) check() error {
 		if err := user.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
 		}
+	}
+	if _, ok := uc.mutation.IsVerified(); !ok {
+		return &ValidationError{Name: "is_verified", err: errors.New(`ent: missing required field "User.is_verified"`)}
 	}
 	return nil
 }
@@ -260,6 +281,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 		_node.Role = value
+	}
+	if value, ok := uc.mutation.IsVerified(); ok {
+		_spec.SetField(user.FieldIsVerified, field.TypeBool, value)
+		_node.IsVerified = value
 	}
 	if nodes := uc.mutation.ReviewsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

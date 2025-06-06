@@ -65,6 +65,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password_hash", Type: field.TypeString},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"user", "admin"}, Default: "user"},
+		{Name: "is_verified", Type: field.TypeBool, Default: false},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

@@ -1450,6 +1450,7 @@ type UserMutation struct {
 	email          *string
 	password_hash  *string
 	role           *user.Role
+	is_verified    *bool
 	clearedFields  map[string]struct{}
 	reviews        map[uuid.UUID]struct{}
 	removedreviews map[uuid.UUID]struct{}
@@ -1815,6 +1816,42 @@ func (m *UserMutation) ResetRole() {
 	m.role = nil
 }
 
+// SetIsVerified sets the "is_verified" field.
+func (m *UserMutation) SetIsVerified(b bool) {
+	m.is_verified = &b
+}
+
+// IsVerified returns the value of the "is_verified" field in the mutation.
+func (m *UserMutation) IsVerified() (r bool, exists bool) {
+	v := m.is_verified
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsVerified returns the old "is_verified" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldIsVerified(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsVerified is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsVerified requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsVerified: %w", err)
+	}
+	return oldValue.IsVerified, nil
+}
+
+// ResetIsVerified resets all changes to the "is_verified" field.
+func (m *UserMutation) ResetIsVerified() {
+	m.is_verified = nil
+}
+
 // AddReviewIDs adds the "reviews" edge to the Review entity by ids.
 func (m *UserMutation) AddReviewIDs(ids ...uuid.UUID) {
 	if m.reviews == nil {
@@ -1903,7 +1940,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.create_time != nil {
 		fields = append(fields, user.FieldCreateTime)
 	}
@@ -1924,6 +1961,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.role != nil {
 		fields = append(fields, user.FieldRole)
+	}
+	if m.is_verified != nil {
+		fields = append(fields, user.FieldIsVerified)
 	}
 	return fields
 }
@@ -1947,6 +1987,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.PasswordHash()
 	case user.FieldRole:
 		return m.Role()
+	case user.FieldIsVerified:
+		return m.IsVerified()
 	}
 	return nil, false
 }
@@ -1970,6 +2012,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPasswordHash(ctx)
 	case user.FieldRole:
 		return m.OldRole(ctx)
+	case user.FieldIsVerified:
+		return m.OldIsVerified(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -2027,6 +2071,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRole(v)
+		return nil
+	case user.FieldIsVerified:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsVerified(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -2097,6 +2148,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldRole:
 		m.ResetRole()
+		return nil
+	case user.FieldIsVerified:
+		m.ResetIsVerified()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

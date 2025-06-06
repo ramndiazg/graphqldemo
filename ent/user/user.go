@@ -32,6 +32,8 @@ const (
 	FieldPasswordHash = "password_hash"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// FieldIsVerified holds the string denoting the is_verified field in the database.
+	FieldIsVerified = "is_verified"
 	// EdgeReviews holds the string denoting the reviews edge name in mutations.
 	EdgeReviews = "reviews"
 	// Table holds the table name of the user in the database.
@@ -55,6 +57,7 @@ var Columns = []string{
 	FieldEmail,
 	FieldPasswordHash,
 	FieldRole,
+	FieldIsVerified,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -74,6 +77,8 @@ var (
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
+	// DefaultIsVerified holds the default value on creation for the "is_verified" field.
+	DefaultIsVerified bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -145,6 +150,11 @@ func ByPasswordHash(opts ...sql.OrderTermOption) OrderOption {
 // ByRole orders the results by the role field.
 func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByIsVerified orders the results by the is_verified field.
+func ByIsVerified(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsVerified, opts...).ToFunc()
 }
 
 // ByReviewsCount orders the results by reviews count.

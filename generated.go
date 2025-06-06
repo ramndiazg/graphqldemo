@@ -107,6 +107,7 @@ type ComplexityRoot struct {
 		CreateTime   func(childComplexity int) int
 		Email        func(childComplexity int) int
 		ID           func(childComplexity int) int
+		IsVerified   func(childComplexity int) int
 		Name         func(childComplexity int) int
 		PasswordHash func(childComplexity int) int
 		Reviews      func(childComplexity int) int
@@ -435,6 +436,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.User.ID(childComplexity), true
+
+	case "User.isVerified":
+		if e.complexity.User.IsVerified == nil {
+			break
+		}
+
+		return e.complexity.User.IsVerified(childComplexity), true
 
 	case "User.name":
 		if e.complexity.User.Name == nil {
@@ -1142,6 +1150,8 @@ func (ec *executionContext) fieldContext_Mutation_createuser(ctx context.Context
 				return ec.fieldContext_User_passwordHash(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "isVerified":
+				return ec.fieldContext_User_isVerified(ctx, field)
 			case "reviews":
 				return ec.fieldContext_User_reviews(ctx, field)
 			}
@@ -1794,6 +1804,8 @@ func (ec *executionContext) fieldContext_Query_users(_ context.Context, field gr
 				return ec.fieldContext_User_passwordHash(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "isVerified":
+				return ec.fieldContext_User_isVerified(ctx, field)
 			case "reviews":
 				return ec.fieldContext_User_reviews(ctx, field)
 			}
@@ -2206,6 +2218,8 @@ func (ec *executionContext) fieldContext_Review_reviewer(_ context.Context, fiel
 				return ec.fieldContext_User_passwordHash(ctx, field)
 			case "role":
 				return ec.fieldContext_User_role(ctx, field)
+			case "isVerified":
+				return ec.fieldContext_User_isVerified(ctx, field)
 			case "reviews":
 				return ec.fieldContext_User_reviews(ctx, field)
 			}
@@ -3032,6 +3046,50 @@ func (ec *executionContext) fieldContext_User_role(_ context.Context, field grap
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type UserRole does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_isVerified(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_isVerified(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsVerified, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_isVerified(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5196,7 +5254,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "username", "email", "passwordHash", "role", "reviewIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "username", "email", "passwordHash", "role", "isVerified", "reviewIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5252,6 +5310,13 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.Role = data
+		case "isVerified":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isVerified"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsVerified = data
 		case "reviewIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewIDs"))
 			data, err := ec.unmarshalOID2ᚕstringᚄ(ctx, v)
@@ -6053,6 +6118,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "role":
 			out.Values[i] = ec._User_role(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "isVerified":
+			out.Values[i] = ec._User_isVerified(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}

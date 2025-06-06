@@ -106,6 +106,20 @@ func (uu *UserUpdate) SetNillableRole(u *user.Role) *UserUpdate {
 	return uu
 }
 
+// SetIsVerified sets the "is_verified" field.
+func (uu *UserUpdate) SetIsVerified(b bool) *UserUpdate {
+	uu.mutation.SetIsVerified(b)
+	return uu
+}
+
+// SetNillableIsVerified sets the "is_verified" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableIsVerified(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetIsVerified(*b)
+	}
+	return uu
+}
+
 // AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
 func (uu *UserUpdate) AddReviewIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddReviewIDs(ids...)
@@ -222,6 +236,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := uu.mutation.IsVerified(); ok {
+		_spec.SetField(user.FieldIsVerified, field.TypeBool, value)
 	}
 	if uu.mutation.ReviewsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -360,6 +377,20 @@ func (uuo *UserUpdateOne) SetRole(u user.Role) *UserUpdateOne {
 func (uuo *UserUpdateOne) SetNillableRole(u *user.Role) *UserUpdateOne {
 	if u != nil {
 		uuo.SetRole(*u)
+	}
+	return uuo
+}
+
+// SetIsVerified sets the "is_verified" field.
+func (uuo *UserUpdateOne) SetIsVerified(b bool) *UserUpdateOne {
+	uuo.mutation.SetIsVerified(b)
+	return uuo
+}
+
+// SetNillableIsVerified sets the "is_verified" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableIsVerified(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetIsVerified(*b)
 	}
 	return uuo
 }
@@ -510,6 +541,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := uuo.mutation.IsVerified(); ok {
+		_spec.SetField(user.FieldIsVerified, field.TypeBool, value)
 	}
 	if uuo.mutation.ReviewsCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -333,6 +333,11 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				selectedFields = append(selectedFields, user.FieldRole)
 				fieldSeen[user.FieldRole] = struct{}{}
 			}
+		case "isVerified":
+			if _, ok := fieldSeen[user.FieldIsVerified]; !ok {
+				selectedFields = append(selectedFields, user.FieldIsVerified)
+				fieldSeen[user.FieldIsVerified] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:
