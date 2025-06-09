@@ -9,6 +9,7 @@ import (
 	"graphQlDemo/ent/user"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -23,7 +24,7 @@ const (
 	userContextKey contextKey = "user"
 )
 
-var secretKey = []byte("my-super-secret-key")
+var secretKey = []byte(os.Getenv("SECRET_KEY"))
 
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)

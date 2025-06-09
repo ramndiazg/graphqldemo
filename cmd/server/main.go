@@ -13,13 +13,16 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	_ "github.com/lib/pq"
-)
-
-const (
-	connStr = "host=localhost port=5432 user=admin dbname=tools-back password=1234 sslmode=disable"
+	"os"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+	  log.Fatal("Error loading .env file")
+	}
+	connStr := os.Getenv("DATABASE")
 	client, err := ent.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("opening ent client", err)
