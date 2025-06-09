@@ -14,9 +14,22 @@ import (
 
 // Createreview is the resolver for the createreview field.
 func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateReviewInput) (*ent.Review, error) {
-	user, ok := ctx.Value("user").(*ent.User)
-	if !ok || user.Role != "user" {
+	usr, ok := ctx.Value("user").(*ent.User)
+	if !ok || usr.Role != "user" {
 		return nil, fmt.Errorf("access denied")
+	}
+
+	exist, err := r.client.User.Query().Where(user.IDEQ(*input.ReviewerID)).Exist(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error checking user if user exist")
+	}
+
+	if !exist {
+		return nil, fmt.Errorf("user unauthorized")
+	}
+
+	if usr.ID != *input.ReviewerID {
+		return nil, fmt.Errorf("user unauthorized")
 	}
 
 	if input.ReviewerID == nil || input.ReviwedToolID == nil {
@@ -89,7 +102,6 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, username string, password string, email string) (*string, error) {
-	//panic(fmt.Errorf("not implemented: Register - register"))
 	exists, err := r.client.User.
 		Query().
 		Where(user.Or(
@@ -98,7 +110,7 @@ func (r *mutationResolver) Register(ctx context.Context, username string, passwo
 		)).
 		Exist(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error checking user existence")
+		return nil, fmt.Errorf("error checking if user exist")
 	}
 	if exists {
 		return nil, fmt.Errorf("username or email already in use")
