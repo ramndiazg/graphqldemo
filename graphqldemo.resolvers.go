@@ -19,8 +19,8 @@ func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateRev
 		return nil, fmt.Errorf("access denied")
 	}
 
-	exist, err := r.client.User.Query().Where(user.IDEQ(*input.ReviewerID)).Exist(ctx)
-	if err != nil {
+	exist, existErr := r.client.User.Query().Where(user.IDEQ(*input.ReviewerID)).Exist(ctx)
+	if existErr != nil {
 		return nil, fmt.Errorf("error checking user if user exist")
 	}
 
@@ -51,8 +51,8 @@ func (r *mutationResolver) Createuser(ctx context.Context, input ent.CreateUserI
 		return nil, fmt.Errorf("access denied")
 	}
 
-	hashedPass, err := auth.HashPassword(input.PasswordHash)
-	if err != nil {
+	hashedPass, hashedPassErr := auth.HashPassword(input.PasswordHash)
+	if hashedPassErr != nil {
 		return nil, fmt.Errorf("error in create user")
 	}
 	return r.client.User.Create().
@@ -81,59 +81,59 @@ func (r *mutationResolver) Createtool(ctx context.Context, input ent.CreateToolI
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*string, error) {
-	user, err := r.client.User.
+	user, userErr := r.client.User.
 		Query().
 		Where(user.Username(username)).
 		Only(ctx)
 
-	if err != nil {
+	if userErr != nil {
 		return nil, fmt.Errorf("password or user invalid")
 	}
 	if !auth.CheckPassword(password, user.PasswordHash) {
 		return nil, fmt.Errorf("password or user invalid")
 	}
-	token, err := auth.CreateToken(user.Username)
-	if err != nil {
+	token, tokenErr := auth.CreateToken(user.Username)
+	if tokenErr != nil {
 		return nil, fmt.Errorf("password or user invalid")
 	}
 
-	return &token, err
+	return &token, tokenErr
 }
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, username string, password string, email string) (*string, error) {
-	exists, err := r.client.User.
+	exists, existsErr := r.client.User.
 		Query().
 		Where(user.Or(
 			user.Username(username),
 			user.Email(email),
 		)).
 		Exist(ctx)
-	if err != nil {
+	if existsErr != nil {
 		return nil, fmt.Errorf("error checking if user exist")
 	}
 	if exists {
 		return nil, fmt.Errorf("username or email already in use")
 	}
 
-	hashedPass, err := auth.HashPassword(password)
-	if err != nil {
+	hashedPass, hashedPassErr := auth.HashPassword(password)
+	if hashedPassErr != nil {
 		return nil, fmt.Errorf("error hashing password")
 	}
 
-	_, err = r.client.User.Create().
+	_, createErr := r.client.User.Create().
 		SetUsername(username).
 		SetEmail(email).
 		SetPasswordHash(hashedPass).
 		SetRole("user").
 		SetName(username).
 		Save(ctx)
-	if err != nil {
+	if createErr != nil {
 		return nil, fmt.Errorf("error creating user")
 	}
 
-	token, err := auth.CreateToken(username)
-	if err != nil {
+	token, tokenErr := auth.CreateToken(username)
+	if tokenErr != nil {
 		return nil, fmt.Errorf("error generating token")
 	}
 

@@ -27,13 +27,13 @@ const (
 var secretKey = []byte(os.Getenv("SECRET_KEY"))
 
 func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	return string(bytes), err
+	bytes, bytesErr := bcrypt.GenerateFromPassword([]byte(password), 10)
+	return string(bytes), bytesErr
 }
 
 func CheckPassword(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+	compareErr := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return compareErr == nil
 }
 
 func CreateToken(username string) (string, error) {
@@ -41,20 +41,20 @@ func CreateToken(username string) (string, error) {
 		"user": username,
 		"exp":  time.Now().Add(time.Hour * 24).Unix(),
 	})
-	tokenString, err := token.SignedString(secretKey)
-	if err != nil {
-		return "", err
+	tokenString, tokenStringErr := token.SignedString(secretKey)
+	if tokenStringErr != nil {
+		return "", tokenStringErr
 	}
 
 	return tokenString, nil
 }
 
 func ValidateToken(tokenString string) (string, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, tokenErr := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 
-	if err != nil || !token.Valid {
+	if tokenErr != nil || !token.Valid {
 		return "", errors.New("invalid token")
 	}
 
@@ -119,17 +119,17 @@ func Middleware(client *ent.Client, next *handler.Server) http.Handler {
 		}
 
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-		username, err := ValidateToken(tokenStr)
-		if err != nil {
+		username, usernameErr := ValidateToken(tokenStr)
+		if usernameErr != nil {
 			http.Error(w, `{"error": "Invalid token"}`, http.StatusUnauthorized)
 			return
 		}
 
-		user, err := client.User.
+		user, userErr := client.User.
 			Query().
 			Where(user.Username(username)).
 			Only(r.Context())
-		if err != nil {
+		if userErr != nil {
 			http.Error(w, `{"error": "User not found"}`, http.StatusUnauthorized)
 			return
 		}

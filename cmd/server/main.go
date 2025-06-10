@@ -18,14 +18,14 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
+	godotenvErr := godotenv.Load()
+	if godotenvErr != nil {
 	  log.Fatal("Error loading .env file")
 	}
 	connStr := os.Getenv("DATABASE")
-	client, err := ent.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal("opening ent client", err)
+	client, clientErr := ent.Open("postgres", connStr)
+	if clientErr != nil {
+		log.Fatal("opening ent client", clientErr)
 	}
 	defer client.Close()
 

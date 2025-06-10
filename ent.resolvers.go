@@ -14,8 +14,8 @@ import (
 
 // Node is the resolver for the node field.
 func (r *queryResolver) Node(ctx context.Context, id string) (ent.Noder, error) {
-	uuidID, err := uuid.Parse(id)
-	if err != nil {
+	uuidID, uuidIDErr := uuid.Parse(id)
+	if uuidIDErr != nil {
 		return nil, fmt.Errorf("invalid ID")
 	}
 	return r.client.Noder(ctx, uuidID)
@@ -25,8 +25,8 @@ func (r *queryResolver) Node(ctx context.Context, id string) (ent.Noder, error) 
 func (r *queryResolver) Nodes(ctx context.Context, ids []string) ([]ent.Noder, error) {
 	uuidIDs := make([]uuid.UUID, len(ids))
 	for i, id := range ids {
-		uuidID, err := uuid.Parse(id)
-		if err != nil {
+		uuidID, uuidErr := uuid.Parse(id)
+		if uuidErr != nil {
 			return nil, fmt.Errorf("invalid ID")
 		}
 		uuidIDs[i] = uuidID
@@ -69,9 +69,9 @@ func (r *createReviewInputResolver) ReviewerID(ctx context.Context, obj *ent.Cre
 	if data == nil {
 		return nil
 	}
-	uuidValue, err := uuid.Parse(*data)
-	if err != nil {
-		return err
+	uuidValue, uuidValueErr := uuid.Parse(*data)
+	if uuidValueErr != nil {
+		return uuidValueErr
 	}
 	obj.ReviewerID = &uuidValue
 	return nil
@@ -82,9 +82,9 @@ func (r *createReviewInputResolver) ReviwedtoolID(ctx context.Context, obj *ent.
 	if data == nil {
 		return nil
 	}
-	uuidValue, err := uuid.Parse(*data)
-	if err != nil {
-		return err
+	uuidValue, uuidValueErr := uuid.Parse(*data)
+	if uuidValueErr != nil {
+		return uuidValueErr
 	}
 	obj.ReviwedToolID = &uuidValue
 	return nil
@@ -94,9 +94,9 @@ func (r *createReviewInputResolver) ReviwedtoolID(ctx context.Context, obj *ent.
 func (r *createToolInputResolver) ReviewIDs(ctx context.Context, obj *ent.CreateToolInput, data []string) error {
 	uuids := make([]uuid.UUID, len(data))
 	for i, id := range data {
-		uuidValue, err := uuid.Parse(id)
-		if err != nil {
-			return err
+		uuidValue, uuidValueErr := uuid.Parse(id)
+		if uuidValueErr != nil {
+			return uuidValueErr
 		}
 		uuids[i] = uuidValue
 	}
@@ -108,9 +108,9 @@ func (r *createToolInputResolver) ReviewIDs(ctx context.Context, obj *ent.Create
 func (r *createUserInputResolver) ReviewIDs(ctx context.Context, obj *ent.CreateUserInput, data []string) error {
 	uuids := make([]uuid.UUID, len(data))
 	for i, id := range data {
-		uuidValue, err := uuid.Parse(id)
-		if err != nil {
-			return err
+		uuidValue, uuidValueErr := uuid.Parse(id)
+		if uuidValueErr != nil {
+			return uuidValueErr
 		}
 		uuids[i] = uuidValue
 	}
