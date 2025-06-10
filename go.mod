@@ -12,7 +12,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.25
 )
 
-require github.com/joho/godotenv v1.5.1 // indirect
+require github.com/joho/godotenv v1.5.1
 
 require (
 	ariga.io/atlas v0.31.1-0.20250212144724-069be8033e83 // indirect
