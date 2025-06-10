@@ -46,14 +46,14 @@ func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateRev
 
 // Createuser is the resolver for the createuser field.
 func (r *mutationResolver) Createuser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
-    currentUser, ok := auth.UserFromContext(ctx)
-    if !ok {
-        return nil, fmt.Errorf("no user in context")
-    }
+	currentUser, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("no user in context")
+	}
 
-    if currentUser.Role != "admin" {
-        return nil, fmt.Errorf("admin role is required")
-    }
+	if currentUser.Role != "admin" {
+		return nil, fmt.Errorf("admin role is required")
+	}
 
 	hashedPass, hashedPassErr := auth.HashPassword(input.PasswordHash)
 	if hashedPassErr != nil {
@@ -69,9 +69,13 @@ func (r *mutationResolver) Createuser(ctx context.Context, input ent.CreateUserI
 
 // Createtool is the resolver for the createtool field.
 func (r *mutationResolver) Createtool(ctx context.Context, input ent.CreateToolInput) (*ent.Tool, error) {
-	user, ok := ctx.Value("user").(*ent.User)
-	if !ok || user.Role != "admin" {
-		return nil, fmt.Errorf("access denied")
+	currentUser, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("no user in context")
+	}
+
+	if currentUser.Role != "admin" {
+		return nil, fmt.Errorf("admin role is required")
 	}
 
 	return r.client.Tool.Create().
@@ -142,6 +146,28 @@ func (r *mutationResolver) Register(ctx context.Context, username string, passwo
 	}
 
 	return &token, nil
+}
+
+// ChangePassword is the resolver for the changePassword field.
+func (r *mutationResolver) ChangePassword(ctx context.Context, currentPassword string, newPassword string) (bool, error) {
+	currentUser, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return false, fmt.Errorf("no user in context")
+	}
+
+	valid := auth.CheckPassword(currentPassword, currentUser.PasswordHash);
+	if !valid {
+		return false, fmt.Errorf("current password is incorrect")
+	}
+
+	hashedPass, hashedPassErr := auth.HashPassword(newPassword)
+    if hashedPassErr != nil {
+        return false, fmt.Errorf("error in hash password")
+    }
+
+	r.client.User.UpdateOne(currentUser).SetPasswordHash(hashedPass).Exec(ctx)
+	return true, nil
+
 }
 
 // Mutation returns MutationResolver implementation.

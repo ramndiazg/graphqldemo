@@ -4,4 +4,5 @@ type Mutation {
     createtool(input: CreateToolInput!): Tool
     login(username: String!, password: String!): String
     register(username: String!, password: String!, email: String!): String
+    changePassword(currentPassword: String!, newPassword: String!): Boolean!
 }
