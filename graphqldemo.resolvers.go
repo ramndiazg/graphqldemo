@@ -46,10 +46,14 @@ func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateRev
 
 // Createuser is the resolver for the createuser field.
 func (r *mutationResolver) Createuser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
-	user, ok := ctx.Value("user").(*ent.User)
-	if !ok || user.Role != "admin" {
-		return nil, fmt.Errorf("access denied")
-	}
+    currentUser, ok := auth.UserFromContext(ctx)
+    if !ok {
+        return nil, fmt.Errorf("no user in context")
+    }
+
+    if currentUser.Role != "admin" {
+        return nil, fmt.Errorf("admin role is required")
+    }
 
 	hashedPass, hashedPassErr := auth.HashPassword(input.PasswordHash)
 	if hashedPassErr != nil {
