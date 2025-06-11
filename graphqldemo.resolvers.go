@@ -59,7 +59,7 @@ func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateRev
 		return nil, fmt.Errorf("failed to create review")
 	}
 
-	updateErr := utils.UpdateToolRating(ctx, r.client, *input.ReviwedToolID);
+	updateErr := utils.UpdateToolRating(ctx, r.client, *input.ReviwedToolID)
 	if updateErr != nil {
 		return nil, fmt.Errorf("failed to update tool rating")
 	}
