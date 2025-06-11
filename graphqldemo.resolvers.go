@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"graphQlDemo/auth"
 	"graphQlDemo/ent"
-	"graphQlDemo/ent/tool"
 	"graphQlDemo/ent/user"
+	"graphQlDemo/utils"
 	"log"
 
 	"github.com/google/uuid"
@@ -44,48 +44,11 @@ func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateRev
 		return nil, fmt.Errorf("failed to create review: %w", err)
 	}
 
-	if _, err := r.UpdateToolAverageRating(ctx, input.ReviwedToolID.String()); err != nil {
-		log.Printf("warning: failed to update average rating: %v", err)
+	if err := utils.UpdateToolRating(ctx, r.client, *input.ReviwedToolID); err != nil {
+		log.Printf("warning: failed to update tool rating: %v", err)
 	}
 
-	if err := r.updateToolRating(ctx, *input.ReviwedToolID); err != nil {
-        log.Printf("warning: failed to update tool rating: %v", err)
-    }
-
 	return review, nil
-}
-
-func (r *mutationResolver) updateToolRating(ctx context.Context, toolID uuid.UUID) error {
-    reviews, err := r.client.Tool.
-        Query().
-        Where(tool.ID(toolID)).
-        QueryReviews().
-        All(ctx)
-    if err != nil {
-        return fmt.Errorf("failed to get reviews: %w", err)
-    }
-
-    var sum int
-    for _, review := range reviews {
-        sum += review.Rating
-    }
-
-    count := len(reviews)
-    average := 0.0
-    if count > 0 {
-        average = float64(sum) / float64(count)
-    }
-
-    _, err = r.client.Tool.
-        UpdateOneID(toolID).
-        SetAverageRating(average).
-        SetRatingCount(count).
-        Save(ctx)
-    if err != nil {
-        return fmt.Errorf("failed to update tool rating: %w", err)
-    }
-
-    return nil
 }
 
 // Createuser is the resolver for the createuser field.
@@ -258,43 +221,19 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, input UpdateProfil
 	return update.Save(ctx)
 }
 
-// UpdateToolAverageRating is the resolver for the updateToolAverageRating field.
-func (r *mutationResolver) UpdateToolAverageRating(ctx context.Context, toolID string) (*ToolAverageRatingResponse, error) {
-	uuidID, err := uuid.Parse(toolID)
-	if err != nil {
-		return nil, fmt.Errorf("invalid tool ID")
-	}
-
-	tool, err := r.client.Tool.Get(ctx, uuidID)
-	if err != nil {
-		return nil, fmt.Errorf("tool not found")
-	}
-
-	reviews, err := tool.QueryReviews().All(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get reviews")
-	}
-
-	var sum int
-	var count int
-	for _, review := range reviews {
-		sum += review.Rating
-		count++
-	}
-
-	var average float64
-	if count > 0 {
-		average = float64(sum) / float64(count)
-	}
-
-	return &ToolAverageRatingResponse{
-		Tool:          tool,
-		AverageRating: average,
-		TotalReviews:  count,
-	}, nil
-}
-
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *mutationResolver) UpdateToolAverageRating(ctx context.Context, toolID string) (*ToolAverageRatingResponse, error) {
+	panic("")
+}
+*/
