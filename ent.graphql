@@ -56,6 +56,7 @@ input CreateUserInput {
   name: String!
   username: String!
   email: String!
+  phoneNumber: String
   passwordHash: String!
   role: UserRole
   isVerified: Boolean
@@ -242,6 +243,7 @@ type User implements Node {
   name: String!
   username: String!
   email: String!
+  phoneNumber: String
   passwordHash: String!
   role: UserRole!
   isVerified: Boolean!

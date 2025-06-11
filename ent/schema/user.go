@@ -22,6 +22,7 @@ func (User) Fields() []ent.Field {
 		field.String("name"),
 		field.String("username").Unique(),
 		field.String("email").Unique(),
+		field.String("phone_number").Unique().Optional(),
 		field.String("password_hash"),
 		field.Enum("role").Values("user", "admin").Default("user"),
 		field.Bool("is_verified").Default(false),

@@ -333,6 +333,11 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				selectedFields = append(selectedFields, user.FieldEmail)
 				fieldSeen[user.FieldEmail] = struct{}{}
 			}
+		case "phoneNumber":
+			if _, ok := fieldSeen[user.FieldPhoneNumber]; !ok {
+				selectedFields = append(selectedFields, user.FieldPhoneNumber)
+				fieldSeen[user.FieldPhoneNumber] = struct{}{}
+			}
 		case "passwordHash":
 			if _, ok := fieldSeen[user.FieldPasswordHash]; !ok {
 				selectedFields = append(selectedFields, user.FieldPasswordHash)

@@ -78,7 +78,7 @@ func init() {
 	// user.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	user.UpdateDefaultUpdateTime = userDescUpdateTime.UpdateDefault.(func() time.Time)
 	// userDescIsVerified is the schema descriptor for is_verified field.
-	userDescIsVerified := userFields[6].Descriptor()
+	userDescIsVerified := userFields[7].Descriptor()
 	// user.DefaultIsVerified holds the default value on creation for the is_verified field.
 	user.DefaultIsVerified = userDescIsVerified.Default.(bool)
 	// userDescID is the schema descriptor for id field.

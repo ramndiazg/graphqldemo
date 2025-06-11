@@ -65,6 +65,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "username", Type: field.TypeString, Unique: true},
 		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "phone_number", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "password_hash", Type: field.TypeString},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"user", "admin"}, Default: "user"},
 		{Name: "is_verified", Type: field.TypeBool, Default: false},

@@ -59,13 +59,15 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		ChangePassword func(childComplexity int, currentPassword string, newPassword string) int
-		Createreview   func(childComplexity int, input ent.CreateReviewInput) int
-		Createtool     func(childComplexity int, input ent.CreateToolInput) int
-		Createuser     func(childComplexity int, input ent.CreateUserInput) int
-		Login          func(childComplexity int, username string, password string) int
-		Register       func(childComplexity int, username string, password string, email string) int
-		UpdateProfile  func(childComplexity int, input UpdateProfileInput) int
+		ChangePassword       func(childComplexity int, currentPassword string, newPassword string) int
+		Createreview         func(childComplexity int, input ent.CreateReviewInput) int
+		Createtool           func(childComplexity int, input ent.CreateToolInput) int
+		Createuser           func(childComplexity int, input ent.CreateUserInput) int
+		Login                func(childComplexity int, username string, password string) int
+		Register             func(childComplexity int, username string, password string, email string) int
+		SendVerificationCode func(childComplexity int, phoneNumber string) int
+		UpdateProfile        func(childComplexity int, input UpdateProfileInput) int
+		VerifyUser           func(childComplexity int, phoneNumber string, twilioCode string) int
 	}
 
 	PageInfo struct {
@@ -114,10 +116,17 @@ type ComplexityRoot struct {
 		IsVerified   func(childComplexity int) int
 		Name         func(childComplexity int) int
 		PasswordHash func(childComplexity int) int
+		PhoneNumber  func(childComplexity int) int
 		Reviews      func(childComplexity int) int
 		Role         func(childComplexity int) int
 		UpdateTime   func(childComplexity int) int
 		Username     func(childComplexity int) int
+	}
+
+	VerifyUserResponse struct {
+		Code    func(childComplexity int) int
+		Message func(childComplexity int) int
+		Success func(childComplexity int) int
 	}
 }
 
@@ -129,6 +138,8 @@ type MutationResolver interface {
 	Register(ctx context.Context, username string, password string, email string) (*string, error)
 	ChangePassword(ctx context.Context, currentPassword string, newPassword string) (bool, error)
 	UpdateProfile(ctx context.Context, input UpdateProfileInput) (*ent.User, error)
+	VerifyUser(ctx context.Context, phoneNumber string, twilioCode string) (*VerifyUserResponse, error)
+	SendVerificationCode(ctx context.Context, phoneNumber string) (bool, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (ent.Noder, error)
@@ -249,6 +260,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.Register(childComplexity, args["username"].(string), args["password"].(string), args["email"].(string)), true
 
+	case "Mutation.sendVerificationCode":
+		if e.complexity.Mutation.SendVerificationCode == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sendVerificationCode_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SendVerificationCode(childComplexity, args["phoneNumber"].(string)), true
+
 	case "Mutation.updateProfile":
 		if e.complexity.Mutation.UpdateProfile == nil {
 			break
@@ -260,6 +283,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.UpdateProfile(childComplexity, args["input"].(UpdateProfileInput)), true
+
+	case "Mutation.verifyUser":
+		if e.complexity.Mutation.VerifyUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_verifyUser_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.VerifyUser(childComplexity, args["phoneNumber"].(string), args["twilioCode"].(string)), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -502,6 +537,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.User.PasswordHash(childComplexity), true
 
+	case "User.phoneNumber":
+		if e.complexity.User.PhoneNumber == nil {
+			break
+		}
+
+		return e.complexity.User.PhoneNumber(childComplexity), true
+
 	case "User.reviews":
 		if e.complexity.User.Reviews == nil {
 			break
@@ -529,6 +571,27 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.User.Username(childComplexity), true
+
+	case "VerifyUserResponse.code":
+		if e.complexity.VerifyUserResponse.Code == nil {
+			break
+		}
+
+		return e.complexity.VerifyUserResponse.Code(childComplexity), true
+
+	case "VerifyUserResponse.message":
+		if e.complexity.VerifyUserResponse.Message == nil {
+			break
+		}
+
+		return e.complexity.VerifyUserResponse.Message(childComplexity), true
+
+	case "VerifyUserResponse.success":
+		if e.complexity.VerifyUserResponse.Success == nil {
+			break
+		}
+
+		return e.complexity.VerifyUserResponse.Success(childComplexity), true
 
 	}
 	return 0, false
@@ -922,6 +985,34 @@ func (ec *executionContext) field_Mutation_register_argsEmail(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_sendVerificationCode_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_sendVerificationCode_argsPhoneNumber(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["phoneNumber"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_sendVerificationCode_argsPhoneNumber(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	if _, ok := rawArgs["phoneNumber"]; !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("phoneNumber"))
+	if tmp, ok := rawArgs["phoneNumber"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_updateProfile_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -947,6 +1038,57 @@ func (ec *executionContext) field_Mutation_updateProfile_argsInput(
 	}
 
 	var zeroVal UpdateProfileInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_verifyUser_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_verifyUser_argsPhoneNumber(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["phoneNumber"] = arg0
+	arg1, err := ec.field_Mutation_verifyUser_argsTwilioCode(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["twilioCode"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_verifyUser_argsPhoneNumber(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	if _, ok := rawArgs["phoneNumber"]; !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("phoneNumber"))
+	if tmp, ok := rawArgs["phoneNumber"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_verifyUser_argsTwilioCode(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	if _, ok := rawArgs["twilioCode"]; !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("twilioCode"))
+	if tmp, ok := rawArgs["twilioCode"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	var zeroVal string
 	return zeroVal, nil
 }
 
@@ -1270,6 +1412,8 @@ func (ec *executionContext) fieldContext_Mutation_createuser(ctx context.Context
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
 				return ec.fieldContext_User_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_User_phoneNumber(ctx, field)
 			case "passwordHash":
 				return ec.fieldContext_User_passwordHash(ctx, field)
 			case "role":
@@ -1582,6 +1726,8 @@ func (ec *executionContext) fieldContext_Mutation_updateProfile(ctx context.Cont
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
 				return ec.fieldContext_User_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_User_phoneNumber(ctx, field)
 			case "passwordHash":
 				return ec.fieldContext_User_passwordHash(ctx, field)
 			case "role":
@@ -1602,6 +1748,124 @@ func (ec *executionContext) fieldContext_Mutation_updateProfile(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateProfile_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_verifyUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_verifyUser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().VerifyUser(rctx, fc.Args["phoneNumber"].(string), fc.Args["twilioCode"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*VerifyUserResponse)
+	fc.Result = res
+	return ec.marshalNVerifyUserResponse2ᚖgraphQlDemoᚐVerifyUserResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_verifyUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "success":
+				return ec.fieldContext_VerifyUserResponse_success(ctx, field)
+			case "message":
+				return ec.fieldContext_VerifyUserResponse_message(ctx, field)
+			case "code":
+				return ec.fieldContext_VerifyUserResponse_code(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type VerifyUserResponse", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_verifyUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_sendVerificationCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_sendVerificationCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SendVerificationCode(rctx, fc.Args["phoneNumber"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_sendVerificationCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_sendVerificationCode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2064,6 +2328,8 @@ func (ec *executionContext) fieldContext_Query_users(_ context.Context, field gr
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
 				return ec.fieldContext_User_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_User_phoneNumber(ctx, field)
 			case "passwordHash":
 				return ec.fieldContext_User_passwordHash(ctx, field)
 			case "role":
@@ -2478,6 +2744,8 @@ func (ec *executionContext) fieldContext_Review_reviewer(_ context.Context, fiel
 				return ec.fieldContext_User_username(ctx, field)
 			case "email":
 				return ec.fieldContext_User_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_User_phoneNumber(ctx, field)
 			case "passwordHash":
 				return ec.fieldContext_User_passwordHash(ctx, field)
 			case "role":
@@ -3313,6 +3581,47 @@ func (ec *executionContext) fieldContext_User_email(_ context.Context, field gra
 	return fc, nil
 }
 
+func (ec *executionContext) _User_phoneNumber(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_phoneNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PhoneNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_phoneNumber(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_passwordHash(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_passwordHash(ctx, field)
 	if err != nil {
@@ -3497,6 +3806,138 @@ func (ec *executionContext) fieldContext_User_reviews(_ context.Context, field g
 				return ec.fieldContext_Review_reviwedtool(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VerifyUserResponse_success(ctx context.Context, field graphql.CollectedField, obj *VerifyUserResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VerifyUserResponse_success(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Success, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VerifyUserResponse_success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VerifyUserResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VerifyUserResponse_message(ctx context.Context, field graphql.CollectedField, obj *VerifyUserResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VerifyUserResponse_message(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VerifyUserResponse_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VerifyUserResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VerifyUserResponse_code(ctx context.Context, field graphql.CollectedField, obj *VerifyUserResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VerifyUserResponse_code(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Code, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VerifyUserResponse_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VerifyUserResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5618,7 +6059,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "username", "email", "passwordHash", "role", "isVerified", "reviewIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "username", "email", "phoneNumber", "passwordHash", "role", "isVerified", "reviewIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5660,6 +6101,13 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.Email = data
+		case "phoneNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phoneNumber"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PhoneNumber = data
 		case "passwordHash":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("passwordHash"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -5932,6 +6380,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updateProfile":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateProfile(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "verifyUser":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_verifyUser(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sendVerificationCode":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sendVerificationCode(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -6534,6 +6996,8 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "phoneNumber":
+			out.Values[i] = ec._User_phoneNumber(ctx, field, obj)
 		case "passwordHash":
 			out.Values[i] = ec._User_passwordHash(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -6582,6 +7046,55 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var verifyUserResponseImplementors = []string{"VerifyUserResponse"}
+
+func (ec *executionContext) _VerifyUserResponse(ctx context.Context, sel ast.SelectionSet, obj *VerifyUserResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, verifyUserResponseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("VerifyUserResponse")
+		case "success":
+			out.Values[i] = ec._VerifyUserResponse_success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "message":
+			out.Values[i] = ec._VerifyUserResponse_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "code":
+			out.Values[i] = ec._VerifyUserResponse_code(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7347,6 +7860,20 @@ func (ec *executionContext) marshalNUserRole2graphQlDemoᚋentᚋuserᚐRole(ctx
 	return v
 }
 
+func (ec *executionContext) marshalNVerifyUserResponse2graphQlDemoᚐVerifyUserResponse(ctx context.Context, sel ast.SelectionSet, v VerifyUserResponse) graphql.Marshaler {
+	return ec._VerifyUserResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNVerifyUserResponse2ᚖgraphQlDemoᚐVerifyUserResponse(ctx context.Context, sel ast.SelectionSet, v *VerifyUserResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._VerifyUserResponse(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -7803,6 +8330,16 @@ func (ec *executionContext) marshalOReview2ᚖgraphQlDemoᚋentᚐReview(ctx con
 		return graphql.Null
 	}
 	return ec._Review(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v any) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {

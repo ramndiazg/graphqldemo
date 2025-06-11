@@ -95,6 +95,7 @@ type CreateUserInput struct {
 	Name         string
 	Username     string
 	Email        string
+	PhoneNumber  *string
 	PasswordHash string
 	Role         *user.Role
 	IsVerified   *bool
@@ -112,6 +113,9 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	m.SetName(i.Name)
 	m.SetUsername(i.Username)
 	m.SetEmail(i.Email)
+	if v := i.PhoneNumber; v != nil {
+		m.SetPhoneNumber(*v)
+	}
 	m.SetPasswordHash(i.PasswordHash)
 	if v := i.Role; v != nil {
 		m.SetRole(*v)

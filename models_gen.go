@@ -7,3 +7,9 @@ type UpdateProfileInput struct {
 	Email    *string `json:"email,omitempty"`
 	Username *string `json:"username,omitempty"`
 }
+
+type VerifyUserResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Code    int    `json:"code"`
+}

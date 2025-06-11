@@ -17,6 +17,7 @@ require github.com/joho/godotenv v1.5.1
 require (
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	google.golang.org/protobuf v1.36.6 // indirect
 )
 
 require (
@@ -35,6 +36,7 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
+	github.com/nyaruka/phonenumbers v1.6.3
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/twilio/twilio-go v1.26.2
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
@@ -42,7 +44,7 @@ require (
 	github.com/zclconf/go-cty v1.14.4 // indirect
 	github.com/zclconf/go-cty-yaml v1.1.0 // indirect
 	golang.org/x/crypto v0.38.0
-	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30 // indirect
+	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/text v0.25.0 // indirect

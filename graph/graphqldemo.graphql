@@ -6,6 +6,8 @@ type Mutation {
     register(username: String!, password: String!, email: String!): String
     changePassword(currentPassword: String!, newPassword: String!): Boolean!
     updateProfile(input: UpdateProfileInput!): User!
+    verifyUser(phoneNumber: String!, twilioCode: String!): VerifyUserResponse!
+    sendVerificationCode(phoneNumber: String!): Boolean!
 }
 
 input UpdateProfileInput {
@@ -13,3 +15,10 @@ input UpdateProfileInput {
     email: String
     username: String
 }
+
+type VerifyUserResponse {
+  success: Boolean!
+  message: String!
+  code: Int!
+}
+

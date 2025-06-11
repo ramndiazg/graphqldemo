@@ -15,6 +15,7 @@ import (
 	"graphQlDemo/utils"
 
 	"github.com/google/uuid"
+	"github.com/nyaruka/phonenumbers"
 )
 
 // Createreview is the resolver for the createreview field.
@@ -235,6 +236,99 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, input UpdateProfil
 	}
 
 	return update.Save(ctx)
+}
+
+// VerifyUser is the resolver for the verifyUser field.
+func (r *mutationResolver) VerifyUser(ctx context.Context, phoneNumber string, twilioCode string) (*VerifyUserResponse, error) {
+	parsedNum, err := phonenumbers.Parse(phoneNumber, "")
+    if err != nil {
+        return &VerifyUserResponse{
+            Success: false,
+            Message: "Invalid phone number format",
+            Code:    400,
+        }, nil
+    }
+    formattedNum := phonenumbers.Format(parsedNum, phonenumbers.E164)
+
+    verification, err := utils.VerifyNumber(formattedNum, twilioCode)
+    if err != nil {
+        return &VerifyUserResponse{
+            Success: false,
+            Message: "Unable to verify code",
+            Code:    500,
+        }, nil
+    }
+
+    switch *verification {
+    case "approved":
+        currentUser, ok := auth.UserFromContext(ctx)
+        if !ok {
+            return &VerifyUserResponse{
+                Success: false,
+                Message: "Authentication required",
+                Code:    401,
+            }, nil
+        }
+
+        if currentUser.PhoneNumber != formattedNum {
+            return &VerifyUserResponse{
+                Success: false,
+                Message: "Phone number does not match user record",
+                Code:    400,
+            }, nil
+        }
+
+        _, err = r.client.User.UpdateOneID(currentUser.ID).
+            SetIsVerified(true).
+            Save(ctx)
+        if err != nil {
+            return &VerifyUserResponse{
+                Success: false,
+                Message: "Failed to update user verification status",
+                Code:    500,
+            }, nil
+        }
+
+        return &VerifyUserResponse{
+            Success: true,
+            Message: "Phone number successfully verified",
+            Code:    200,
+        }, nil
+
+    default:
+        return &VerifyUserResponse{
+            Success: false,
+            Message: "Verification failed",
+            Code:    400,
+        }, nil
+    }
+}
+
+// SendVerificationCode is the resolver for the sendVerificationCode field.
+func (r *mutationResolver) SendVerificationCode(ctx context.Context, phoneNumber string) (bool, error) {
+	currentUser, ok := auth.UserFromContext(ctx)
+    if !ok {
+        return false, fmt.Errorf("authentication required")
+    }
+
+    parsedNum, err := phonenumbers.Parse(phoneNumber, "")
+    if err != nil {
+        return false, fmt.Errorf("invalid phone number format")
+    }
+    formattedNum := phonenumbers.Format(parsedNum, phonenumbers.E164)
+
+    _, err = r.client.User.UpdateOneID(currentUser.ID).
+        SetPhoneNumber(formattedNum).
+        Save(ctx)
+    if err != nil {
+        return false, fmt.Errorf("failed to update user phone number")
+    }
+
+    if err := utils.SendVerificationCode(formattedNum); err != nil {
+        return false, err
+    }
+
+    return true, nil
 }
 
 // Mutation returns MutationResolver implementation.
