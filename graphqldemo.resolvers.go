@@ -155,19 +155,63 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, currentPassword s
 		return false, fmt.Errorf("no user in context")
 	}
 
-	valid := auth.CheckPassword(currentPassword, currentUser.PasswordHash);
+	valid := auth.CheckPassword(currentPassword, currentUser.PasswordHash)
 	if !valid {
 		return false, fmt.Errorf("current password is incorrect")
 	}
 
 	hashedPass, hashedPassErr := auth.HashPassword(newPassword)
-    if hashedPassErr != nil {
-        return false, fmt.Errorf("error in hash password")
-    }
+	if hashedPassErr != nil {
+		return false, fmt.Errorf("error in hash password")
+	}
 
 	r.client.User.UpdateOne(currentUser).SetPasswordHash(hashedPass).Exec(ctx)
 	return true, nil
+}
 
+// UpdateProfile is the resolver for the updateProfile field.
+func (r *mutationResolver) UpdateProfile(ctx context.Context, input UpdateProfileInput) (*ent.User, error) {
+    currentUser, ok := auth.UserFromContext(ctx)
+    if !ok {
+        return nil, fmt.Errorf("authentication required")
+    }
+
+    update := r.client.User.UpdateOneID(currentUser.ID)
+    if input.Name != nil {
+        update.SetName(*input.Name)
+    }
+
+    if input.Email != nil {
+        emailExists, emailExistsErr := r.client.User.
+            Query().
+            Where(user.EmailEQ(*input.Email)).
+            Where(user.IDNEQ(currentUser.ID)).
+            Exist(ctx)
+        if emailExistsErr != nil {
+            return nil, fmt.Errorf("error checking email availability")
+        }
+        if emailExists {
+            return nil, fmt.Errorf("email already in use")
+        }
+        update.SetEmail(*input.Email)
+    }
+
+    if input.Username != nil {
+        userNameExists, userNameExistsErr := r.client.User.
+            Query().
+            Where(user.UsernameEQ(*input.Username)).
+            Where(user.IDNEQ(currentUser.ID)).
+            Exist(ctx)
+        if userNameExistsErr != nil {
+            return nil, fmt.Errorf("error checking username availability")
+        }
+        if userNameExists {
+            return nil, fmt.Errorf("username already in use")
+        }
+        update.SetUsername(*input.Username)
+    }
+
+    return update.Save(ctx)
 }
 
 // Mutation returns MutationResolver implementation.

@@ -5,4 +5,11 @@ type Mutation {
     login(username: String!, password: String!): String
     register(username: String!, password: String!, email: String!): String
     changePassword(currentPassword: String!, newPassword: String!): Boolean!
+    updateProfile(input: UpdateProfileInput!): User!
+}
+
+input UpdateProfileInput {
+    name: String
+    email: String
+    username: String
 }
