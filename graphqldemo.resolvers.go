@@ -9,9 +9,10 @@ import (
 	"fmt"
 	"graphQlDemo/auth"
 	"graphQlDemo/ent"
+	"graphQlDemo/ent/review"
+	"graphQlDemo/ent/tool"
 	"graphQlDemo/ent/user"
 	"graphQlDemo/utils"
-	"log"
 
 	"github.com/google/uuid"
 )
@@ -27,25 +28,40 @@ func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateRev
 		return nil, fmt.Errorf("reviwedToolID is required")
 	}
 
-	userUUID, err := uuid.Parse(usr.ID.String())
-	if err != nil {
+	exists, existsErr := r.client.Review.
+		Query().
+		Where(
+			review.HasReviewerWith(user.ID(usr.ID)),
+			review.HasReviwedToolWith(tool.ID(*input.ReviwedToolID)),
+		).
+		Exist(ctx)
+	if existsErr != nil {
+		return nil, fmt.Errorf("failed to check existing reviews")
+	}
+
+	if exists {
+		return nil, fmt.Errorf("you have already reviewed this tool")
+	}
+
+	userUUID, userUUIDErr := uuid.Parse(usr.ID.String())
+	if userUUIDErr != nil {
 		return nil, fmt.Errorf("invalid user ID")
 	}
 
 	input.ReviewerID = &userUUID
-
-	review, err := r.client.Review.Create().
+	review, reviewErr := r.client.Review.Create().
 		SetRating(input.Rating).
 		SetComment(input.Comment).
 		SetReviewerID(*input.ReviewerID).
 		SetReviwedToolID(*input.ReviwedToolID).
 		Save(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create review: %w", err)
+	if reviewErr != nil {
+		return nil, fmt.Errorf("failed to create review")
 	}
 
-	if err := utils.UpdateToolRating(ctx, r.client, *input.ReviwedToolID); err != nil {
-		log.Printf("warning: failed to update tool rating: %v", err)
+	updateErr := utils.UpdateToolRating(ctx, r.client, *input.ReviwedToolID);
+	if updateErr != nil {
+		return nil, fmt.Errorf("failed to update tool rating")
 	}
 
 	return review, nil
@@ -225,15 +241,3 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, input UpdateProfil
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *mutationResolver) UpdateToolAverageRating(ctx context.Context, toolID string) (*ToolAverageRatingResponse, error) {
-	panic("")
-}
-*/
