@@ -204,6 +204,16 @@ func (t *ToolQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				selectedFields = append(selectedFields, tool.FieldImageURL)
 				fieldSeen[tool.FieldImageURL] = struct{}{}
 			}
+		case "averageRating":
+			if _, ok := fieldSeen[tool.FieldAverageRating]; !ok {
+				selectedFields = append(selectedFields, tool.FieldAverageRating)
+				fieldSeen[tool.FieldAverageRating] = struct{}{}
+			}
+		case "ratingCount":
+			if _, ok := fieldSeen[tool.FieldRatingCount]; !ok {
+				selectedFields = append(selectedFields, tool.FieldRatingCount)
+				fieldSeen[tool.FieldRatingCount] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:

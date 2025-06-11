@@ -2,6 +2,16 @@
 
 package graphQlDemo
 
+import (
+	"graphQlDemo/ent"
+)
+
+type ToolAverageRatingResponse struct {
+	Tool          *ent.Tool `json:"tool"`
+	AverageRating float64   `json:"averageRating"`
+	TotalReviews  int       `json:"totalReviews"`
+}
+
 type UpdateProfileInput struct {
 	Name     *string `json:"name,omitempty"`
 	Email    *string `json:"email,omitempty"`

@@ -32,6 +32,10 @@ const (
 	FieldWebsite = "website"
 	// FieldImageURL holds the string denoting the image_url field in the database.
 	FieldImageURL = "image_url"
+	// FieldAverageRating holds the string denoting the average_rating field in the database.
+	FieldAverageRating = "average_rating"
+	// FieldRatingCount holds the string denoting the rating_count field in the database.
+	FieldRatingCount = "rating_count"
 	// EdgeReviews holds the string denoting the reviews edge name in mutations.
 	EdgeReviews = "reviews"
 	// Table holds the table name of the tool in the database.
@@ -55,6 +59,8 @@ var Columns = []string{
 	FieldCategory,
 	FieldWebsite,
 	FieldImageURL,
+	FieldAverageRating,
+	FieldRatingCount,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -74,6 +80,10 @@ var (
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
+	// DefaultAverageRating holds the default value on creation for the "average_rating" field.
+	DefaultAverageRating float64
+	// DefaultRatingCount holds the default value on creation for the "rating_count" field.
+	DefaultRatingCount int
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -152,6 +162,16 @@ func ByWebsite(opts ...sql.OrderTermOption) OrderOption {
 // ByImageURL orders the results by the image_url field.
 func ByImageURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldImageURL, opts...).ToFunc()
+}
+
+// ByAverageRating orders the results by the average_rating field.
+func ByAverageRating(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAverageRating, opts...).ToFunc()
+}
+
+// ByRatingCount orders the results by the rating_count field.
+func ByRatingCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRatingCount, opts...).ToFunc()
 }
 
 // ByReviewsCount orders the results by reviews count.

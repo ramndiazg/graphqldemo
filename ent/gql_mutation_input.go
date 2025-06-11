@@ -46,14 +46,16 @@ func (c *ReviewCreate) SetInput(i CreateReviewInput) *ReviewCreate {
 
 // CreateToolInput represents a mutation input for creating tools.
 type CreateToolInput struct {
-	CreateTime  *time.Time
-	UpdateTime  *time.Time
-	Name        string
-	Description string
-	Category    tool.Category
-	Website     string
-	ImageURL    string
-	ReviewIDs   []uuid.UUID
+	CreateTime    *time.Time
+	UpdateTime    *time.Time
+	Name          string
+	Description   string
+	Category      tool.Category
+	Website       string
+	ImageURL      string
+	AverageRating *float64
+	RatingCount   *int
+	ReviewIDs     []uuid.UUID
 }
 
 // Mutate applies the CreateToolInput on the ToolMutation builder.
@@ -69,6 +71,12 @@ func (i *CreateToolInput) Mutate(m *ToolMutation) {
 	m.SetCategory(i.Category)
 	m.SetWebsite(i.Website)
 	m.SetImageURL(i.ImageURL)
+	if v := i.AverageRating; v != nil {
+		m.SetAverageRating(*v)
+	}
+	if v := i.RatingCount; v != nil {
+		m.SetRatingCount(*v)
+	}
 	if v := i.ReviewIDs; len(v) > 0 {
 		m.AddReviewIDs(v...)
 	}

@@ -48,6 +48,8 @@ var (
 		{Name: "category", Type: field.TypeEnum, Enums: []string{"FRONTEND", "BACKEND", "FULLSTACK", "MOBILE", "DEVOPS", "TESTING", "DATABASE", "CLOUD", "SECURITY", "MONITORING", "VERSION_CONTROL", "DOCUMENTATION"}},
 		{Name: "website", Type: field.TypeString},
 		{Name: "image_url", Type: field.TypeString},
+		{Name: "average_rating", Type: field.TypeFloat64, Nullable: true, Default: 0},
+		{Name: "rating_count", Type: field.TypeInt, Nullable: true, Default: 0},
 	}
 	// ToolsTable holds the schema information for the "tools" table.
 	ToolsTable = &schema.Table{

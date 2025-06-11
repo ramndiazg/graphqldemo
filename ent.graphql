@@ -36,6 +36,8 @@ input CreateToolInput {
   category: ToolCategory!
   website: String!
   imageURL: String!
+  averageRating: Float
+  ratingCount: Int
   reviewIDs: [ID!]
 }
 """
@@ -186,6 +188,8 @@ type Tool implements Node {
   category: ToolCategory!
   website: String!
   imageURL: String!
+  averageRating: Float
+  ratingCount: Int
   reviews: [Review!]
 }
 """

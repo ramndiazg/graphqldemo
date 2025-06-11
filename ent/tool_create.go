@@ -80,6 +80,34 @@ func (tc *ToolCreate) SetImageURL(s string) *ToolCreate {
 	return tc
 }
 
+// SetAverageRating sets the "average_rating" field.
+func (tc *ToolCreate) SetAverageRating(f float64) *ToolCreate {
+	tc.mutation.SetAverageRating(f)
+	return tc
+}
+
+// SetNillableAverageRating sets the "average_rating" field if the given value is not nil.
+func (tc *ToolCreate) SetNillableAverageRating(f *float64) *ToolCreate {
+	if f != nil {
+		tc.SetAverageRating(*f)
+	}
+	return tc
+}
+
+// SetRatingCount sets the "rating_count" field.
+func (tc *ToolCreate) SetRatingCount(i int) *ToolCreate {
+	tc.mutation.SetRatingCount(i)
+	return tc
+}
+
+// SetNillableRatingCount sets the "rating_count" field if the given value is not nil.
+func (tc *ToolCreate) SetNillableRatingCount(i *int) *ToolCreate {
+	if i != nil {
+		tc.SetRatingCount(*i)
+	}
+	return tc
+}
+
 // SetID sets the "id" field.
 func (tc *ToolCreate) SetID(u uuid.UUID) *ToolCreate {
 	tc.mutation.SetID(u)
@@ -151,6 +179,14 @@ func (tc *ToolCreate) defaults() {
 	if _, ok := tc.mutation.UpdateTime(); !ok {
 		v := tool.DefaultUpdateTime()
 		tc.mutation.SetUpdateTime(v)
+	}
+	if _, ok := tc.mutation.AverageRating(); !ok {
+		v := tool.DefaultAverageRating
+		tc.mutation.SetAverageRating(v)
+	}
+	if _, ok := tc.mutation.RatingCount(); !ok {
+		v := tool.DefaultRatingCount
+		tc.mutation.SetRatingCount(v)
 	}
 	if _, ok := tc.mutation.ID(); !ok {
 		v := tool.DefaultID()
@@ -248,6 +284,14 @@ func (tc *ToolCreate) createSpec() (*Tool, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.ImageURL(); ok {
 		_spec.SetField(tool.FieldImageURL, field.TypeString, value)
 		_node.ImageURL = value
+	}
+	if value, ok := tc.mutation.AverageRating(); ok {
+		_spec.SetField(tool.FieldAverageRating, field.TypeFloat64, value)
+		_node.AverageRating = value
+	}
+	if value, ok := tc.mutation.RatingCount(); ok {
+		_spec.SetField(tool.FieldRatingCount, field.TypeInt, value)
+		_node.RatingCount = value
 	}
 	if nodes := tc.mutation.ReviewsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

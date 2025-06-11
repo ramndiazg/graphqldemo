@@ -37,6 +37,8 @@ func (Tool) Fields() []ent.Field {
 		),
 		field.String("website"),
 		field.String("image_url"),
+		field.Float("average_rating").Default(0).Optional(),
+        field.Int("rating_count").Default(0).Optional(),
 	}
 }
 

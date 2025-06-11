@@ -59,13 +59,14 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		ChangePassword func(childComplexity int, currentPassword string, newPassword string) int
-		Createreview   func(childComplexity int, input ent.CreateReviewInput) int
-		Createtool     func(childComplexity int, input ent.CreateToolInput) int
-		Createuser     func(childComplexity int, input ent.CreateUserInput) int
-		Login          func(childComplexity int, username string, password string) int
-		Register       func(childComplexity int, username string, password string, email string) int
-		UpdateProfile  func(childComplexity int, input UpdateProfileInput) int
+		ChangePassword          func(childComplexity int, currentPassword string, newPassword string) int
+		Createreview            func(childComplexity int, input ent.CreateReviewInput) int
+		Createtool              func(childComplexity int, input ent.CreateToolInput) int
+		Createuser              func(childComplexity int, input ent.CreateUserInput) int
+		Login                   func(childComplexity int, username string, password string) int
+		Register                func(childComplexity int, username string, password string, email string) int
+		UpdateProfile           func(childComplexity int, input UpdateProfileInput) int
+		UpdateToolAverageRating func(childComplexity int, toolID string) int
 	}
 
 	PageInfo struct {
@@ -94,15 +95,23 @@ type ComplexityRoot struct {
 	}
 
 	Tool struct {
-		Category    func(childComplexity int) int
-		CreateTime  func(childComplexity int) int
-		Description func(childComplexity int) int
-		ID          func(childComplexity int) int
-		ImageURL    func(childComplexity int) int
-		Name        func(childComplexity int) int
-		Reviews     func(childComplexity int) int
-		UpdateTime  func(childComplexity int) int
-		Website     func(childComplexity int) int
+		AverageRating func(childComplexity int) int
+		Category      func(childComplexity int) int
+		CreateTime    func(childComplexity int) int
+		Description   func(childComplexity int) int
+		ID            func(childComplexity int) int
+		ImageURL      func(childComplexity int) int
+		Name          func(childComplexity int) int
+		RatingCount   func(childComplexity int) int
+		Reviews       func(childComplexity int) int
+		UpdateTime    func(childComplexity int) int
+		Website       func(childComplexity int) int
+	}
+
+	ToolAverageRatingResponse struct {
+		AverageRating func(childComplexity int) int
+		Tool          func(childComplexity int) int
+		TotalReviews  func(childComplexity int) int
 	}
 
 	User struct {
@@ -127,6 +136,7 @@ type MutationResolver interface {
 	Register(ctx context.Context, username string, password string, email string) (*string, error)
 	ChangePassword(ctx context.Context, currentPassword string, newPassword string) (bool, error)
 	UpdateProfile(ctx context.Context, input UpdateProfileInput) (*ent.User, error)
+	UpdateToolAverageRating(ctx context.Context, toolID string) (*ToolAverageRatingResponse, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (ent.Noder, error)
@@ -259,6 +269,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.UpdateProfile(childComplexity, args["input"].(UpdateProfileInput)), true
 
+	case "Mutation.updateToolAverageRating":
+		if e.complexity.Mutation.UpdateToolAverageRating == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateToolAverageRating_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateToolAverageRating(childComplexity, args["toolID"].(string)), true
+
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
 			break
@@ -381,6 +403,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Review.UpdateTime(childComplexity), true
 
+	case "Tool.averageRating":
+		if e.complexity.Tool.AverageRating == nil {
+			break
+		}
+
+		return e.complexity.Tool.AverageRating(childComplexity), true
+
 	case "Tool.category":
 		if e.complexity.Tool.Category == nil {
 			break
@@ -423,6 +452,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Tool.Name(childComplexity), true
 
+	case "Tool.ratingCount":
+		if e.complexity.Tool.RatingCount == nil {
+			break
+		}
+
+		return e.complexity.Tool.RatingCount(childComplexity), true
+
 	case "Tool.reviews":
 		if e.complexity.Tool.Reviews == nil {
 			break
@@ -443,6 +479,27 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Tool.Website(childComplexity), true
+
+	case "ToolAverageRatingResponse.averageRating":
+		if e.complexity.ToolAverageRatingResponse.AverageRating == nil {
+			break
+		}
+
+		return e.complexity.ToolAverageRatingResponse.AverageRating(childComplexity), true
+
+	case "ToolAverageRatingResponse.tool":
+		if e.complexity.ToolAverageRatingResponse.Tool == nil {
+			break
+		}
+
+		return e.complexity.ToolAverageRatingResponse.Tool(childComplexity), true
+
+	case "ToolAverageRatingResponse.totalReviews":
+		if e.complexity.ToolAverageRatingResponse.TotalReviews == nil {
+			break
+		}
+
+		return e.complexity.ToolAverageRatingResponse.TotalReviews(childComplexity), true
 
 	case "User.createTime":
 		if e.complexity.User.CreateTime == nil {
@@ -934,6 +991,34 @@ func (ec *executionContext) field_Mutation_updateProfile_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_updateToolAverageRating_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_updateToolAverageRating_argsToolID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["toolID"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateToolAverageRating_argsToolID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	if _, ok := rawArgs["toolID"]; !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("toolID"))
+	if tmp, ok := rawArgs["toolID"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1332,6 +1417,10 @@ func (ec *executionContext) fieldContext_Mutation_createtool(ctx context.Context
 				return ec.fieldContext_Tool_website(ctx, field)
 			case "imageURL":
 				return ec.fieldContext_Tool_imageURL(ctx, field)
+			case "averageRating":
+				return ec.fieldContext_Tool_averageRating(ctx, field)
+			case "ratingCount":
+				return ec.fieldContext_Tool_ratingCount(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Tool_reviews(ctx, field)
 			}
@@ -1582,6 +1671,69 @@ func (ec *executionContext) fieldContext_Mutation_updateProfile(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateProfile_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateToolAverageRating(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateToolAverageRating(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateToolAverageRating(rctx, fc.Args["toolID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ToolAverageRatingResponse)
+	fc.Result = res
+	return ec.marshalNToolAverageRatingResponse2ᚖgraphQlDemoᚐToolAverageRatingResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateToolAverageRating(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "tool":
+				return ec.fieldContext_ToolAverageRatingResponse_tool(ctx, field)
+			case "averageRating":
+				return ec.fieldContext_ToolAverageRatingResponse_averageRating(ctx, field)
+			case "totalReviews":
+				return ec.fieldContext_ToolAverageRatingResponse_totalReviews(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ToolAverageRatingResponse", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateToolAverageRating_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1980,6 +2132,10 @@ func (ec *executionContext) fieldContext_Query_tools(_ context.Context, field gr
 				return ec.fieldContext_Tool_website(ctx, field)
 			case "imageURL":
 				return ec.fieldContext_Tool_imageURL(ctx, field)
+			case "averageRating":
+				return ec.fieldContext_Tool_averageRating(ctx, field)
+			case "ratingCount":
+				return ec.fieldContext_Tool_ratingCount(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Tool_reviews(ctx, field)
 			}
@@ -2521,6 +2677,10 @@ func (ec *executionContext) fieldContext_Review_reviwedtool(_ context.Context, f
 				return ec.fieldContext_Tool_website(ctx, field)
 			case "imageURL":
 				return ec.fieldContext_Tool_imageURL(ctx, field)
+			case "averageRating":
+				return ec.fieldContext_Tool_averageRating(ctx, field)
+			case "ratingCount":
+				return ec.fieldContext_Tool_ratingCount(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Tool_reviews(ctx, field)
 			}
@@ -2882,6 +3042,88 @@ func (ec *executionContext) fieldContext_Tool_imageURL(_ context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Tool_averageRating(ctx context.Context, field graphql.CollectedField, obj *ent.Tool) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tool_averageRating(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AverageRating, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalOFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tool_averageRating(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tool",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tool_ratingCount(ctx context.Context, field graphql.CollectedField, obj *ent.Tool) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tool_ratingCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RatingCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalOInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tool_ratingCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tool",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Tool_reviews(ctx context.Context, field graphql.CollectedField, obj *ent.Tool) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Tool_reviews(ctx, field)
 	if err != nil {
@@ -2934,6 +3176,162 @@ func (ec *executionContext) fieldContext_Tool_reviews(_ context.Context, field g
 				return ec.fieldContext_Review_reviwedtool(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ToolAverageRatingResponse_tool(ctx context.Context, field graphql.CollectedField, obj *ToolAverageRatingResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ToolAverageRatingResponse_tool(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tool, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Tool)
+	fc.Result = res
+	return ec.marshalNTool2ᚖgraphQlDemoᚋentᚐTool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ToolAverageRatingResponse_tool(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ToolAverageRatingResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tool_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Tool_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Tool_updateTime(ctx, field)
+			case "name":
+				return ec.fieldContext_Tool_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Tool_description(ctx, field)
+			case "category":
+				return ec.fieldContext_Tool_category(ctx, field)
+			case "website":
+				return ec.fieldContext_Tool_website(ctx, field)
+			case "imageURL":
+				return ec.fieldContext_Tool_imageURL(ctx, field)
+			case "averageRating":
+				return ec.fieldContext_Tool_averageRating(ctx, field)
+			case "ratingCount":
+				return ec.fieldContext_Tool_ratingCount(ctx, field)
+			case "reviews":
+				return ec.fieldContext_Tool_reviews(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tool", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ToolAverageRatingResponse_averageRating(ctx context.Context, field graphql.CollectedField, obj *ToolAverageRatingResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ToolAverageRatingResponse_averageRating(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AverageRating, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ToolAverageRatingResponse_averageRating(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ToolAverageRatingResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ToolAverageRatingResponse_totalReviews(ctx context.Context, field graphql.CollectedField, obj *ToolAverageRatingResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ToolAverageRatingResponse_totalReviews(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalReviews, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ToolAverageRatingResponse_totalReviews(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ToolAverageRatingResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5416,7 +5814,7 @@ func (ec *executionContext) unmarshalInputCreateToolInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "description", "category", "website", "imageURL", "reviewIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "description", "category", "website", "imageURL", "averageRating", "ratingCount", "reviewIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5472,6 +5870,20 @@ func (ec *executionContext) unmarshalInputCreateToolInput(ctx context.Context, o
 				return it, err
 			}
 			it.ImageURL = data
+		case "averageRating":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("averageRating"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AverageRating = data
+		case "ratingCount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ratingCount"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RatingCount = data
 		case "reviewIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewIDs"))
 			data, err := ec.unmarshalOID2ᚕstringᚄ(ctx, v)
@@ -5808,6 +6220,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updateProfile":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateProfile(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateToolAverageRating":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateToolAverageRating(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -6278,6 +6697,10 @@ func (ec *executionContext) _Tool(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "averageRating":
+			out.Values[i] = ec._Tool_averageRating(ctx, field, obj)
+		case "ratingCount":
+			out.Values[i] = ec._Tool_ratingCount(ctx, field, obj)
 		case "reviews":
 			field := field
 
@@ -6311,6 +6734,55 @@ func (ec *executionContext) _Tool(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var toolAverageRatingResponseImplementors = []string{"ToolAverageRatingResponse"}
+
+func (ec *executionContext) _ToolAverageRatingResponse(ctx context.Context, sel ast.SelectionSet, obj *ToolAverageRatingResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, toolAverageRatingResponseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ToolAverageRatingResponse")
+		case "tool":
+			out.Values[i] = ec._ToolAverageRatingResponse_tool(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "averageRating":
+			out.Values[i] = ec._ToolAverageRatingResponse_averageRating(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalReviews":
+			out.Values[i] = ec._ToolAverageRatingResponse_totalReviews(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6842,6 +7314,21 @@ func (ec *executionContext) unmarshalNCreateUserInput2graphQlDemoᚋentᚐCreate
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7102,6 +7589,20 @@ func (ec *executionContext) marshalNTool2ᚖgraphQlDemoᚋentᚐTool(ctx context
 		return graphql.Null
 	}
 	return ec._Tool(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNToolAverageRatingResponse2graphQlDemoᚐToolAverageRatingResponse(ctx context.Context, sel ast.SelectionSet, v ToolAverageRatingResponse) graphql.Marshaler {
+	return ec._ToolAverageRatingResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNToolAverageRatingResponse2ᚖgraphQlDemoᚐToolAverageRatingResponse(ctx context.Context, sel ast.SelectionSet, v *ToolAverageRatingResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ToolAverageRatingResponse(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNToolCategory2graphQlDemoᚋentᚋtoolᚐCategory(ctx context.Context, v any) (tool.Category, error) {
@@ -7512,6 +8013,32 @@ func (ec *executionContext) marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCu
 	return v
 }
 
+func (ec *executionContext) unmarshalOFloat2float64(ctx context.Context, v any) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalFloatContext(*v)
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
 func (ec *executionContext) unmarshalOID2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
 	if v == nil {
 		return nil, nil
@@ -7561,6 +8088,32 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 		return graphql.Null
 	}
 	res := graphql.MarshalID(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v any) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v any) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
 	return res
 }
 

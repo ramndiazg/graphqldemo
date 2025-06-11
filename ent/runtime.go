@@ -50,6 +50,14 @@ func init() {
 	tool.DefaultUpdateTime = toolDescUpdateTime.Default.(func() time.Time)
 	// tool.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	tool.UpdateDefaultUpdateTime = toolDescUpdateTime.UpdateDefault.(func() time.Time)
+	// toolDescAverageRating is the schema descriptor for average_rating field.
+	toolDescAverageRating := toolFields[6].Descriptor()
+	// tool.DefaultAverageRating holds the default value on creation for the average_rating field.
+	tool.DefaultAverageRating = toolDescAverageRating.Default.(float64)
+	// toolDescRatingCount is the schema descriptor for rating_count field.
+	toolDescRatingCount := toolFields[7].Descriptor()
+	// tool.DefaultRatingCount holds the default value on creation for the rating_count field.
+	tool.DefaultRatingCount = toolDescRatingCount.Default.(int)
 	// toolDescID is the schema descriptor for id field.
 	toolDescID := toolFields[0].Descriptor()
 	// tool.DefaultID holds the default value on creation for the id field.

@@ -9,39 +9,83 @@ import (
 	"fmt"
 	"graphQlDemo/auth"
 	"graphQlDemo/ent"
+	"graphQlDemo/ent/tool"
 	"graphQlDemo/ent/user"
+	"log"
+
+	"github.com/google/uuid"
 )
 
 // Createreview is the resolver for the createreview field.
 func (r *mutationResolver) Createreview(ctx context.Context, input ent.CreateReviewInput) (*ent.Review, error) {
-	usr, ok := ctx.Value("user").(*ent.User)
+	usr, ok := auth.UserFromContext(ctx)
 	if !ok || usr.Role != "user" {
 		return nil, fmt.Errorf("access denied")
 	}
 
-	exist, existErr := r.client.User.Query().Where(user.IDEQ(*input.ReviewerID)).Exist(ctx)
-	if existErr != nil {
-		return nil, fmt.Errorf("error checking user if user exist")
+	if input.ReviwedToolID == nil {
+		return nil, fmt.Errorf("reviwedToolID is required")
 	}
 
-	if !exist {
-		return nil, fmt.Errorf("user unauthorized")
+	userUUID, err := uuid.Parse(usr.ID.String())
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID")
 	}
 
-	if usr.ID != *input.ReviewerID {
-		return nil, fmt.Errorf("user unauthorized")
-	}
+	input.ReviewerID = &userUUID
 
-	if input.ReviewerID == nil || input.ReviwedToolID == nil {
-		return nil, fmt.Errorf("reviewerID and reviwedtoolID are required")
-	}
-
-	return r.client.Review.Create().
+	review, err := r.client.Review.Create().
 		SetRating(input.Rating).
 		SetComment(input.Comment).
 		SetReviewerID(*input.ReviewerID).
 		SetReviwedToolID(*input.ReviwedToolID).
 		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create review: %w", err)
+	}
+
+	if _, err := r.UpdateToolAverageRating(ctx, input.ReviwedToolID.String()); err != nil {
+		log.Printf("warning: failed to update average rating: %v", err)
+	}
+
+	if err := r.updateToolRating(ctx, *input.ReviwedToolID); err != nil {
+        log.Printf("warning: failed to update tool rating: %v", err)
+    }
+
+	return review, nil
+}
+
+func (r *mutationResolver) updateToolRating(ctx context.Context, toolID uuid.UUID) error {
+    reviews, err := r.client.Tool.
+        Query().
+        Where(tool.ID(toolID)).
+        QueryReviews().
+        All(ctx)
+    if err != nil {
+        return fmt.Errorf("failed to get reviews: %w", err)
+    }
+
+    var sum int
+    for _, review := range reviews {
+        sum += review.Rating
+    }
+
+    count := len(reviews)
+    average := 0.0
+    if count > 0 {
+        average = float64(sum) / float64(count)
+    }
+
+    _, err = r.client.Tool.
+        UpdateOneID(toolID).
+        SetAverageRating(average).
+        SetRatingCount(count).
+        Save(ctx)
+    if err != nil {
+        return fmt.Errorf("failed to update tool rating: %w", err)
+    }
+
+    return nil
 }
 
 // Createuser is the resolver for the createuser field.
@@ -171,47 +215,83 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, currentPassword s
 
 // UpdateProfile is the resolver for the updateProfile field.
 func (r *mutationResolver) UpdateProfile(ctx context.Context, input UpdateProfileInput) (*ent.User, error) {
-    currentUser, ok := auth.UserFromContext(ctx)
-    if !ok {
-        return nil, fmt.Errorf("authentication required")
-    }
+	currentUser, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("authentication required")
+	}
 
-    update := r.client.User.UpdateOneID(currentUser.ID)
-    if input.Name != nil {
-        update.SetName(*input.Name)
-    }
+	update := r.client.User.UpdateOneID(currentUser.ID)
+	if input.Name != nil {
+		update.SetName(*input.Name)
+	}
 
-    if input.Email != nil {
-        emailExists, emailExistsErr := r.client.User.
-            Query().
-            Where(user.EmailEQ(*input.Email)).
-            Where(user.IDNEQ(currentUser.ID)).
-            Exist(ctx)
-        if emailExistsErr != nil {
-            return nil, fmt.Errorf("error checking email availability")
-        }
-        if emailExists {
-            return nil, fmt.Errorf("email already in use")
-        }
-        update.SetEmail(*input.Email)
-    }
+	if input.Email != nil {
+		emailExists, emailExistsErr := r.client.User.
+			Query().
+			Where(user.EmailEQ(*input.Email)).
+			Where(user.IDNEQ(currentUser.ID)).
+			Exist(ctx)
+		if emailExistsErr != nil {
+			return nil, fmt.Errorf("error checking email availability")
+		}
+		if emailExists {
+			return nil, fmt.Errorf("email already in use")
+		}
+		update.SetEmail(*input.Email)
+	}
 
-    if input.Username != nil {
-        userNameExists, userNameExistsErr := r.client.User.
-            Query().
-            Where(user.UsernameEQ(*input.Username)).
-            Where(user.IDNEQ(currentUser.ID)).
-            Exist(ctx)
-        if userNameExistsErr != nil {
-            return nil, fmt.Errorf("error checking username availability")
-        }
-        if userNameExists {
-            return nil, fmt.Errorf("username already in use")
-        }
-        update.SetUsername(*input.Username)
-    }
+	if input.Username != nil {
+		userNameExists, userNameExistsErr := r.client.User.
+			Query().
+			Where(user.UsernameEQ(*input.Username)).
+			Where(user.IDNEQ(currentUser.ID)).
+			Exist(ctx)
+		if userNameExistsErr != nil {
+			return nil, fmt.Errorf("error checking username availability")
+		}
+		if userNameExists {
+			return nil, fmt.Errorf("username already in use")
+		}
+		update.SetUsername(*input.Username)
+	}
 
-    return update.Save(ctx)
+	return update.Save(ctx)
+}
+
+// UpdateToolAverageRating is the resolver for the updateToolAverageRating field.
+func (r *mutationResolver) UpdateToolAverageRating(ctx context.Context, toolID string) (*ToolAverageRatingResponse, error) {
+	uuidID, err := uuid.Parse(toolID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid tool ID")
+	}
+
+	tool, err := r.client.Tool.Get(ctx, uuidID)
+	if err != nil {
+		return nil, fmt.Errorf("tool not found")
+	}
+
+	reviews, err := tool.QueryReviews().All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get reviews")
+	}
+
+	var sum int
+	var count int
+	for _, review := range reviews {
+		sum += review.Rating
+		count++
+	}
+
+	var average float64
+	if count > 0 {
+		average = float64(sum) / float64(count)
+	}
+
+	return &ToolAverageRatingResponse{
+		Tool:          tool,
+		AverageRating: average,
+		TotalReviews:  count,
+	}, nil
 }
 
 // Mutation returns MutationResolver implementation.

@@ -86,6 +86,16 @@ func ImageURL(v string) predicate.Tool {
 	return predicate.Tool(sql.FieldEQ(FieldImageURL, v))
 }
 
+// AverageRating applies equality check predicate on the "average_rating" field. It's identical to AverageRatingEQ.
+func AverageRating(v float64) predicate.Tool {
+	return predicate.Tool(sql.FieldEQ(FieldAverageRating, v))
+}
+
+// RatingCount applies equality check predicate on the "rating_count" field. It's identical to RatingCountEQ.
+func RatingCount(v int) predicate.Tool {
+	return predicate.Tool(sql.FieldEQ(FieldRatingCount, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.Tool {
 	return predicate.Tool(sql.FieldEQ(FieldCreateTime, v))
@@ -444,6 +454,106 @@ func ImageURLEqualFold(v string) predicate.Tool {
 // ImageURLContainsFold applies the ContainsFold predicate on the "image_url" field.
 func ImageURLContainsFold(v string) predicate.Tool {
 	return predicate.Tool(sql.FieldContainsFold(FieldImageURL, v))
+}
+
+// AverageRatingEQ applies the EQ predicate on the "average_rating" field.
+func AverageRatingEQ(v float64) predicate.Tool {
+	return predicate.Tool(sql.FieldEQ(FieldAverageRating, v))
+}
+
+// AverageRatingNEQ applies the NEQ predicate on the "average_rating" field.
+func AverageRatingNEQ(v float64) predicate.Tool {
+	return predicate.Tool(sql.FieldNEQ(FieldAverageRating, v))
+}
+
+// AverageRatingIn applies the In predicate on the "average_rating" field.
+func AverageRatingIn(vs ...float64) predicate.Tool {
+	return predicate.Tool(sql.FieldIn(FieldAverageRating, vs...))
+}
+
+// AverageRatingNotIn applies the NotIn predicate on the "average_rating" field.
+func AverageRatingNotIn(vs ...float64) predicate.Tool {
+	return predicate.Tool(sql.FieldNotIn(FieldAverageRating, vs...))
+}
+
+// AverageRatingGT applies the GT predicate on the "average_rating" field.
+func AverageRatingGT(v float64) predicate.Tool {
+	return predicate.Tool(sql.FieldGT(FieldAverageRating, v))
+}
+
+// AverageRatingGTE applies the GTE predicate on the "average_rating" field.
+func AverageRatingGTE(v float64) predicate.Tool {
+	return predicate.Tool(sql.FieldGTE(FieldAverageRating, v))
+}
+
+// AverageRatingLT applies the LT predicate on the "average_rating" field.
+func AverageRatingLT(v float64) predicate.Tool {
+	return predicate.Tool(sql.FieldLT(FieldAverageRating, v))
+}
+
+// AverageRatingLTE applies the LTE predicate on the "average_rating" field.
+func AverageRatingLTE(v float64) predicate.Tool {
+	return predicate.Tool(sql.FieldLTE(FieldAverageRating, v))
+}
+
+// AverageRatingIsNil applies the IsNil predicate on the "average_rating" field.
+func AverageRatingIsNil() predicate.Tool {
+	return predicate.Tool(sql.FieldIsNull(FieldAverageRating))
+}
+
+// AverageRatingNotNil applies the NotNil predicate on the "average_rating" field.
+func AverageRatingNotNil() predicate.Tool {
+	return predicate.Tool(sql.FieldNotNull(FieldAverageRating))
+}
+
+// RatingCountEQ applies the EQ predicate on the "rating_count" field.
+func RatingCountEQ(v int) predicate.Tool {
+	return predicate.Tool(sql.FieldEQ(FieldRatingCount, v))
+}
+
+// RatingCountNEQ applies the NEQ predicate on the "rating_count" field.
+func RatingCountNEQ(v int) predicate.Tool {
+	return predicate.Tool(sql.FieldNEQ(FieldRatingCount, v))
+}
+
+// RatingCountIn applies the In predicate on the "rating_count" field.
+func RatingCountIn(vs ...int) predicate.Tool {
+	return predicate.Tool(sql.FieldIn(FieldRatingCount, vs...))
+}
+
+// RatingCountNotIn applies the NotIn predicate on the "rating_count" field.
+func RatingCountNotIn(vs ...int) predicate.Tool {
+	return predicate.Tool(sql.FieldNotIn(FieldRatingCount, vs...))
+}
+
+// RatingCountGT applies the GT predicate on the "rating_count" field.
+func RatingCountGT(v int) predicate.Tool {
+	return predicate.Tool(sql.FieldGT(FieldRatingCount, v))
+}
+
+// RatingCountGTE applies the GTE predicate on the "rating_count" field.
+func RatingCountGTE(v int) predicate.Tool {
+	return predicate.Tool(sql.FieldGTE(FieldRatingCount, v))
+}
+
+// RatingCountLT applies the LT predicate on the "rating_count" field.
+func RatingCountLT(v int) predicate.Tool {
+	return predicate.Tool(sql.FieldLT(FieldRatingCount, v))
+}
+
+// RatingCountLTE applies the LTE predicate on the "rating_count" field.
+func RatingCountLTE(v int) predicate.Tool {
+	return predicate.Tool(sql.FieldLTE(FieldRatingCount, v))
+}
+
+// RatingCountIsNil applies the IsNil predicate on the "rating_count" field.
+func RatingCountIsNil() predicate.Tool {
+	return predicate.Tool(sql.FieldIsNull(FieldRatingCount))
+}
+
+// RatingCountNotNil applies the NotNil predicate on the "rating_count" field.
+func RatingCountNotNil() predicate.Tool {
+	return predicate.Tool(sql.FieldNotNull(FieldRatingCount))
 }
 
 // HasReviews applies the HasEdge predicate on the "reviews" edge.

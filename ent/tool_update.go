@@ -106,6 +106,60 @@ func (tu *ToolUpdate) SetNillableImageURL(s *string) *ToolUpdate {
 	return tu
 }
 
+// SetAverageRating sets the "average_rating" field.
+func (tu *ToolUpdate) SetAverageRating(f float64) *ToolUpdate {
+	tu.mutation.ResetAverageRating()
+	tu.mutation.SetAverageRating(f)
+	return tu
+}
+
+// SetNillableAverageRating sets the "average_rating" field if the given value is not nil.
+func (tu *ToolUpdate) SetNillableAverageRating(f *float64) *ToolUpdate {
+	if f != nil {
+		tu.SetAverageRating(*f)
+	}
+	return tu
+}
+
+// AddAverageRating adds f to the "average_rating" field.
+func (tu *ToolUpdate) AddAverageRating(f float64) *ToolUpdate {
+	tu.mutation.AddAverageRating(f)
+	return tu
+}
+
+// ClearAverageRating clears the value of the "average_rating" field.
+func (tu *ToolUpdate) ClearAverageRating() *ToolUpdate {
+	tu.mutation.ClearAverageRating()
+	return tu
+}
+
+// SetRatingCount sets the "rating_count" field.
+func (tu *ToolUpdate) SetRatingCount(i int) *ToolUpdate {
+	tu.mutation.ResetRatingCount()
+	tu.mutation.SetRatingCount(i)
+	return tu
+}
+
+// SetNillableRatingCount sets the "rating_count" field if the given value is not nil.
+func (tu *ToolUpdate) SetNillableRatingCount(i *int) *ToolUpdate {
+	if i != nil {
+		tu.SetRatingCount(*i)
+	}
+	return tu
+}
+
+// AddRatingCount adds i to the "rating_count" field.
+func (tu *ToolUpdate) AddRatingCount(i int) *ToolUpdate {
+	tu.mutation.AddRatingCount(i)
+	return tu
+}
+
+// ClearRatingCount clears the value of the "rating_count" field.
+func (tu *ToolUpdate) ClearRatingCount() *ToolUpdate {
+	tu.mutation.ClearRatingCount()
+	return tu
+}
+
 // AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
 func (tu *ToolUpdate) AddReviewIDs(ids ...uuid.UUID) *ToolUpdate {
 	tu.mutation.AddReviewIDs(ids...)
@@ -222,6 +276,24 @@ func (tu *ToolUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.ImageURL(); ok {
 		_spec.SetField(tool.FieldImageURL, field.TypeString, value)
+	}
+	if value, ok := tu.mutation.AverageRating(); ok {
+		_spec.SetField(tool.FieldAverageRating, field.TypeFloat64, value)
+	}
+	if value, ok := tu.mutation.AddedAverageRating(); ok {
+		_spec.AddField(tool.FieldAverageRating, field.TypeFloat64, value)
+	}
+	if tu.mutation.AverageRatingCleared() {
+		_spec.ClearField(tool.FieldAverageRating, field.TypeFloat64)
+	}
+	if value, ok := tu.mutation.RatingCount(); ok {
+		_spec.SetField(tool.FieldRatingCount, field.TypeInt, value)
+	}
+	if value, ok := tu.mutation.AddedRatingCount(); ok {
+		_spec.AddField(tool.FieldRatingCount, field.TypeInt, value)
+	}
+	if tu.mutation.RatingCountCleared() {
+		_spec.ClearField(tool.FieldRatingCount, field.TypeInt)
 	}
 	if tu.mutation.ReviewsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -361,6 +433,60 @@ func (tuo *ToolUpdateOne) SetNillableImageURL(s *string) *ToolUpdateOne {
 	if s != nil {
 		tuo.SetImageURL(*s)
 	}
+	return tuo
+}
+
+// SetAverageRating sets the "average_rating" field.
+func (tuo *ToolUpdateOne) SetAverageRating(f float64) *ToolUpdateOne {
+	tuo.mutation.ResetAverageRating()
+	tuo.mutation.SetAverageRating(f)
+	return tuo
+}
+
+// SetNillableAverageRating sets the "average_rating" field if the given value is not nil.
+func (tuo *ToolUpdateOne) SetNillableAverageRating(f *float64) *ToolUpdateOne {
+	if f != nil {
+		tuo.SetAverageRating(*f)
+	}
+	return tuo
+}
+
+// AddAverageRating adds f to the "average_rating" field.
+func (tuo *ToolUpdateOne) AddAverageRating(f float64) *ToolUpdateOne {
+	tuo.mutation.AddAverageRating(f)
+	return tuo
+}
+
+// ClearAverageRating clears the value of the "average_rating" field.
+func (tuo *ToolUpdateOne) ClearAverageRating() *ToolUpdateOne {
+	tuo.mutation.ClearAverageRating()
+	return tuo
+}
+
+// SetRatingCount sets the "rating_count" field.
+func (tuo *ToolUpdateOne) SetRatingCount(i int) *ToolUpdateOne {
+	tuo.mutation.ResetRatingCount()
+	tuo.mutation.SetRatingCount(i)
+	return tuo
+}
+
+// SetNillableRatingCount sets the "rating_count" field if the given value is not nil.
+func (tuo *ToolUpdateOne) SetNillableRatingCount(i *int) *ToolUpdateOne {
+	if i != nil {
+		tuo.SetRatingCount(*i)
+	}
+	return tuo
+}
+
+// AddRatingCount adds i to the "rating_count" field.
+func (tuo *ToolUpdateOne) AddRatingCount(i int) *ToolUpdateOne {
+	tuo.mutation.AddRatingCount(i)
+	return tuo
+}
+
+// ClearRatingCount clears the value of the "rating_count" field.
+func (tuo *ToolUpdateOne) ClearRatingCount() *ToolUpdateOne {
+	tuo.mutation.ClearRatingCount()
 	return tuo
 }
 
@@ -510,6 +636,24 @@ func (tuo *ToolUpdateOne) sqlSave(ctx context.Context) (_node *Tool, err error) 
 	}
 	if value, ok := tuo.mutation.ImageURL(); ok {
 		_spec.SetField(tool.FieldImageURL, field.TypeString, value)
+	}
+	if value, ok := tuo.mutation.AverageRating(); ok {
+		_spec.SetField(tool.FieldAverageRating, field.TypeFloat64, value)
+	}
+	if value, ok := tuo.mutation.AddedAverageRating(); ok {
+		_spec.AddField(tool.FieldAverageRating, field.TypeFloat64, value)
+	}
+	if tuo.mutation.AverageRatingCleared() {
+		_spec.ClearField(tool.FieldAverageRating, field.TypeFloat64)
+	}
+	if value, ok := tuo.mutation.RatingCount(); ok {
+		_spec.SetField(tool.FieldRatingCount, field.TypeInt, value)
+	}
+	if value, ok := tuo.mutation.AddedRatingCount(); ok {
+		_spec.AddField(tool.FieldRatingCount, field.TypeInt, value)
+	}
+	if tuo.mutation.RatingCountCleared() {
+		_spec.ClearField(tool.FieldRatingCount, field.TypeInt)
 	}
 	if tuo.mutation.ReviewsCleared() {
 		edge := &sqlgraph.EdgeSpec{

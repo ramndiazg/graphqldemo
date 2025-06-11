@@ -6,10 +6,17 @@ type Mutation {
     register(username: String!, password: String!, email: String!): String
     changePassword(currentPassword: String!, newPassword: String!): Boolean!
     updateProfile(input: UpdateProfileInput!): User!
+    updateToolAverageRating(toolID: ID!): ToolAverageRatingResponse!
 }
 
 input UpdateProfileInput {
     name: String
     email: String
     username: String
+}
+
+type ToolAverageRatingResponse {
+    tool: Tool!
+    averageRating: Float!
+    totalReviews: Int!
 }

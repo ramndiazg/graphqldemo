@@ -691,23 +691,27 @@ func (m *ReviewMutation) ResetEdge(name string) error {
 // ToolMutation represents an operation that mutates the Tool nodes in the graph.
 type ToolMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *uuid.UUID
-	create_time    *time.Time
-	update_time    *time.Time
-	name           *string
-	description    *string
-	category       *tool.Category
-	website        *string
-	image_url      *string
-	clearedFields  map[string]struct{}
-	reviews        map[uuid.UUID]struct{}
-	removedreviews map[uuid.UUID]struct{}
-	clearedreviews bool
-	done           bool
-	oldValue       func(context.Context) (*Tool, error)
-	predicates     []predicate.Tool
+	op                Op
+	typ               string
+	id                *uuid.UUID
+	create_time       *time.Time
+	update_time       *time.Time
+	name              *string
+	description       *string
+	category          *tool.Category
+	website           *string
+	image_url         *string
+	average_rating    *float64
+	addaverage_rating *float64
+	rating_count      *int
+	addrating_count   *int
+	clearedFields     map[string]struct{}
+	reviews           map[uuid.UUID]struct{}
+	removedreviews    map[uuid.UUID]struct{}
+	clearedreviews    bool
+	done              bool
+	oldValue          func(context.Context) (*Tool, error)
+	predicates        []predicate.Tool
 }
 
 var _ ent.Mutation = (*ToolMutation)(nil)
@@ -1066,6 +1070,146 @@ func (m *ToolMutation) ResetImageURL() {
 	m.image_url = nil
 }
 
+// SetAverageRating sets the "average_rating" field.
+func (m *ToolMutation) SetAverageRating(f float64) {
+	m.average_rating = &f
+	m.addaverage_rating = nil
+}
+
+// AverageRating returns the value of the "average_rating" field in the mutation.
+func (m *ToolMutation) AverageRating() (r float64, exists bool) {
+	v := m.average_rating
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAverageRating returns the old "average_rating" field's value of the Tool entity.
+// If the Tool object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ToolMutation) OldAverageRating(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAverageRating is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAverageRating requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAverageRating: %w", err)
+	}
+	return oldValue.AverageRating, nil
+}
+
+// AddAverageRating adds f to the "average_rating" field.
+func (m *ToolMutation) AddAverageRating(f float64) {
+	if m.addaverage_rating != nil {
+		*m.addaverage_rating += f
+	} else {
+		m.addaverage_rating = &f
+	}
+}
+
+// AddedAverageRating returns the value that was added to the "average_rating" field in this mutation.
+func (m *ToolMutation) AddedAverageRating() (r float64, exists bool) {
+	v := m.addaverage_rating
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearAverageRating clears the value of the "average_rating" field.
+func (m *ToolMutation) ClearAverageRating() {
+	m.average_rating = nil
+	m.addaverage_rating = nil
+	m.clearedFields[tool.FieldAverageRating] = struct{}{}
+}
+
+// AverageRatingCleared returns if the "average_rating" field was cleared in this mutation.
+func (m *ToolMutation) AverageRatingCleared() bool {
+	_, ok := m.clearedFields[tool.FieldAverageRating]
+	return ok
+}
+
+// ResetAverageRating resets all changes to the "average_rating" field.
+func (m *ToolMutation) ResetAverageRating() {
+	m.average_rating = nil
+	m.addaverage_rating = nil
+	delete(m.clearedFields, tool.FieldAverageRating)
+}
+
+// SetRatingCount sets the "rating_count" field.
+func (m *ToolMutation) SetRatingCount(i int) {
+	m.rating_count = &i
+	m.addrating_count = nil
+}
+
+// RatingCount returns the value of the "rating_count" field in the mutation.
+func (m *ToolMutation) RatingCount() (r int, exists bool) {
+	v := m.rating_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRatingCount returns the old "rating_count" field's value of the Tool entity.
+// If the Tool object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ToolMutation) OldRatingCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRatingCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRatingCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRatingCount: %w", err)
+	}
+	return oldValue.RatingCount, nil
+}
+
+// AddRatingCount adds i to the "rating_count" field.
+func (m *ToolMutation) AddRatingCount(i int) {
+	if m.addrating_count != nil {
+		*m.addrating_count += i
+	} else {
+		m.addrating_count = &i
+	}
+}
+
+// AddedRatingCount returns the value that was added to the "rating_count" field in this mutation.
+func (m *ToolMutation) AddedRatingCount() (r int, exists bool) {
+	v := m.addrating_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearRatingCount clears the value of the "rating_count" field.
+func (m *ToolMutation) ClearRatingCount() {
+	m.rating_count = nil
+	m.addrating_count = nil
+	m.clearedFields[tool.FieldRatingCount] = struct{}{}
+}
+
+// RatingCountCleared returns if the "rating_count" field was cleared in this mutation.
+func (m *ToolMutation) RatingCountCleared() bool {
+	_, ok := m.clearedFields[tool.FieldRatingCount]
+	return ok
+}
+
+// ResetRatingCount resets all changes to the "rating_count" field.
+func (m *ToolMutation) ResetRatingCount() {
+	m.rating_count = nil
+	m.addrating_count = nil
+	delete(m.clearedFields, tool.FieldRatingCount)
+}
+
 // AddReviewIDs adds the "reviews" edge to the Review entity by ids.
 func (m *ToolMutation) AddReviewIDs(ids ...uuid.UUID) {
 	if m.reviews == nil {
@@ -1154,7 +1298,7 @@ func (m *ToolMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ToolMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 9)
 	if m.create_time != nil {
 		fields = append(fields, tool.FieldCreateTime)
 	}
@@ -1175,6 +1319,12 @@ func (m *ToolMutation) Fields() []string {
 	}
 	if m.image_url != nil {
 		fields = append(fields, tool.FieldImageURL)
+	}
+	if m.average_rating != nil {
+		fields = append(fields, tool.FieldAverageRating)
+	}
+	if m.rating_count != nil {
+		fields = append(fields, tool.FieldRatingCount)
 	}
 	return fields
 }
@@ -1198,6 +1348,10 @@ func (m *ToolMutation) Field(name string) (ent.Value, bool) {
 		return m.Website()
 	case tool.FieldImageURL:
 		return m.ImageURL()
+	case tool.FieldAverageRating:
+		return m.AverageRating()
+	case tool.FieldRatingCount:
+		return m.RatingCount()
 	}
 	return nil, false
 }
@@ -1221,6 +1375,10 @@ func (m *ToolMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldWebsite(ctx)
 	case tool.FieldImageURL:
 		return m.OldImageURL(ctx)
+	case tool.FieldAverageRating:
+		return m.OldAverageRating(ctx)
+	case tool.FieldRatingCount:
+		return m.OldRatingCount(ctx)
 	}
 	return nil, fmt.Errorf("unknown Tool field %s", name)
 }
@@ -1279,6 +1437,20 @@ func (m *ToolMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetImageURL(v)
 		return nil
+	case tool.FieldAverageRating:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAverageRating(v)
+		return nil
+	case tool.FieldRatingCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRatingCount(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Tool field %s", name)
 }
@@ -1286,13 +1458,26 @@ func (m *ToolMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ToolMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addaverage_rating != nil {
+		fields = append(fields, tool.FieldAverageRating)
+	}
+	if m.addrating_count != nil {
+		fields = append(fields, tool.FieldRatingCount)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ToolMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case tool.FieldAverageRating:
+		return m.AddedAverageRating()
+	case tool.FieldRatingCount:
+		return m.AddedRatingCount()
+	}
 	return nil, false
 }
 
@@ -1301,6 +1486,20 @@ func (m *ToolMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ToolMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case tool.FieldAverageRating:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAverageRating(v)
+		return nil
+	case tool.FieldRatingCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRatingCount(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Tool numeric field %s", name)
 }
@@ -1308,7 +1507,14 @@ func (m *ToolMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ToolMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(tool.FieldAverageRating) {
+		fields = append(fields, tool.FieldAverageRating)
+	}
+	if m.FieldCleared(tool.FieldRatingCount) {
+		fields = append(fields, tool.FieldRatingCount)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1321,6 +1527,14 @@ func (m *ToolMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ToolMutation) ClearField(name string) error {
+	switch name {
+	case tool.FieldAverageRating:
+		m.ClearAverageRating()
+		return nil
+	case tool.FieldRatingCount:
+		m.ClearRatingCount()
+		return nil
+	}
 	return fmt.Errorf("unknown Tool nullable field %s", name)
 }
 
@@ -1348,6 +1562,12 @@ func (m *ToolMutation) ResetField(name string) error {
 		return nil
 	case tool.FieldImageURL:
 		m.ResetImageURL()
+		return nil
+	case tool.FieldAverageRating:
+		m.ResetAverageRating()
+		return nil
+	case tool.FieldRatingCount:
+		m.ResetRatingCount()
 		return nil
 	}
 	return fmt.Errorf("unknown Tool field %s", name)

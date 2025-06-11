@@ -32,6 +32,10 @@ type Tool struct {
 	Website string `json:"website,omitempty"`
 	// ImageURL holds the value of the "image_url" field.
 	ImageURL string `json:"image_url,omitempty"`
+	// AverageRating holds the value of the "average_rating" field.
+	AverageRating float64 `json:"average_rating,omitempty"`
+	// RatingCount holds the value of the "rating_count" field.
+	RatingCount int `json:"rating_count,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ToolQuery when eager-loading is set.
 	Edges        ToolEdges `json:"edges"`
@@ -65,6 +69,10 @@ func (*Tool) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case tool.FieldAverageRating:
+			values[i] = new(sql.NullFloat64)
+		case tool.FieldRatingCount:
+			values[i] = new(sql.NullInt64)
 		case tool.FieldName, tool.FieldDescription, tool.FieldCategory, tool.FieldWebsite, tool.FieldImageURL:
 			values[i] = new(sql.NullString)
 		case tool.FieldCreateTime, tool.FieldUpdateTime:
@@ -134,6 +142,18 @@ func (t *Tool) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.ImageURL = value.String
 			}
+		case tool.FieldAverageRating:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field average_rating", values[i])
+			} else if value.Valid {
+				t.AverageRating = value.Float64
+			}
+		case tool.FieldRatingCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field rating_count", values[i])
+			} else if value.Valid {
+				t.RatingCount = int(value.Int64)
+			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
 		}
@@ -195,6 +215,12 @@ func (t *Tool) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("image_url=")
 	builder.WriteString(t.ImageURL)
+	builder.WriteString(", ")
+	builder.WriteString("average_rating=")
+	builder.WriteString(fmt.Sprintf("%v", t.AverageRating))
+	builder.WriteString(", ")
+	builder.WriteString("rating_count=")
+	builder.WriteString(fmt.Sprintf("%v", t.RatingCount))
 	builder.WriteByte(')')
 	return builder.String()
 }
